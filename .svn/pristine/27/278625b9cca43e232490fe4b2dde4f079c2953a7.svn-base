@@ -1,0 +1,10 @@
+module.exports = {
+    secret: 'jsonwebtoken',
+    url : 'mongodb://localhost:27017/chatbot',
+    access_token : 'A3UUASVNN7RW762U5MEYATEZ7YP5OYB3',
+    auth : 'Bearer ',
+    version : '?v=20170307',
+    // url:'mongodb://polo33333:12345678.c@ds135537.mlab.com:35537/ifood',
+    // imgUrl: 'https://images.unsplash.com/photo-1499084732479-de2c02d45fcc?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=2089&q=80',
+    default_image: "http://localhost:3000/images/default_image.png"
+  };

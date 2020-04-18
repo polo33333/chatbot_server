@@ -1,0 +1,17 @@
+var mongoose = require('mongoose');
+var Schema = mongoose.Schema;
+
+var serviceSchema = new Schema({
+    senderId: String,
+    variable: [
+        { entityName: String, value: String }
+    ],
+    isRequire: {type: Boolean, defaut: false},
+    work: [
+        Object
+    ],
+    botId: String,
+
+})
+
+module.exports = mongoose.model('Memory', serviceSchema);

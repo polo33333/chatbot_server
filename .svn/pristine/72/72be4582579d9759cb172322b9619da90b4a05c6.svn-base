@@ -1,0 +1,22 @@
+var mongoose = require('mongoose');
+var Schema = mongoose.Schema;
+
+var serviceSchema = new Schema({
+    senderId: String,
+    name: String,
+    phone: String,
+    gender: Number,
+    message: [{
+        isSender: Boolean,
+        text: String,
+        createAt: { type: Date, default: Date.now },
+
+    }],
+    platForm: String,
+    botId: String,
+
+}
+    , {
+        timestamps: true
+    })
+module.exports = mongoose.model('History', serviceSchema);

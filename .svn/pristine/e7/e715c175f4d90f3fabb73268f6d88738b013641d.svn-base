@@ -1,0 +1,126 @@
+
+const Block = require('../models/Block.model');
+const Step = require('../models/Step.model');
+const Intent = require('../models/Intent.model');
+const sR = require('../functions/M_SendResponse.function');
+const message = require('../functions/C_String.function');
+
+
+module.exports = {
+
+    // get all with blockid
+    getAll: async (req, res) => {
+        try {
+
+            const { botId, blockId } = req.params;
+            const bloc = await Step.find({ blockId: blockId });
+            return sR.sendResponse(res, 200, bloc, message.getSuccess);
+
+        } catch (error) {
+
+            console.log('Error[Step:getAll]: ' + error);
+            return sR.sendResponse(res, 400, null, error);
+        }
+    },
+
+    // get by id
+    getById: async (req, res) => {
+        try {
+            const { stepId } = req.params;
+            let step = await Step.findById(stepId);
+            return sR.sendResponse(res, 200, step, message.getSuccess);
+
+        } catch (error) {
+
+            console.log('Error[Step:getById]: ' + error);
+            return sR.sendResponse(res, 400, null, error);
+        }
+    },
+
+    // create
+    create: async (req, res) => {
+
+        try {
+
+            const { botId, blockId } = req.params;
+            var obj = req.body;
+            
+            obj.blockId = blockId;
+            obj.botId = botId;
+            const step = await Step.create(obj);
+            if(step)
+            return sR.sendResponse(res, 200, step, message.createSuccess);
+            return sR.sendResponse(res, 400, null, message.createFail);
+
+        } catch (error) {
+
+            console.log('Error[Step:create]: ' + error);
+            return sR.sendResponse(res, 400, null, error);
+        }
+    },
+    // update method with id
+    update: async (req, res) => {
+        try {
+
+            const { botId, stepId } = req.params;
+            var obj = req.body;
+            console.log(obj)
+            var step_curr = await Step.findById(stepId);
+           if(obj.name != undefined){
+            step_curr.name = obj.name;
+           }
+           if(step_curr.type =='text-card'){
+            if(obj.content != undefined){
+                step_curr.items[0].content =obj.content;
+            }
+           }else if(step_curr.type == 'form-card'){
+            if(obj.entityName != undefined){
+                step_curr.items ={ content: step_curr.data[0].content, entityName: obj.entityName};
+            }
+            if(obj.content != undefined){
+                step_curr.items ={ content: obj.content,entityName: step_curr.data[0].entityName};
+            }
+           } else{
+            if(obj.condition != undefined){
+                step_curr.condition = obj.condition; 
+            }
+            if(obj.data != undefined){
+                // step_curr.data =obj.data;
+                // var step_curr1 = await Step.findByIdAndUpdate(stepId,{ $push: {"data": obj.data}},
+                // {  safe: true, upsert: true});
+            }
+           }
+
+
+            
+            const step = await step_curr.save(step_curr);
+            if(step)
+            return sR.sendResponse(res, 200, step, message.updateSuccess);
+            return sR.sendResponse(res, 400, null, message.updateFail);
+
+        } catch (error) {
+
+            console.log('Error[Step:update]: ' + error);
+            return sR.sendResponse(res, 400, null, error);
+        }
+    },
+
+    // remove method with id
+    remove: async (req, res) => {
+        try {
+
+            const { stepId } = req.params;
+            const step = await Step.findByIdAndRemove(stepId);
+            if (step) {
+                return sR.sendResponse(res, 200, null, message.deleteSuccess);
+            }
+            return sR.sendResponse(res, 400, null, message.deleteFail);
+
+        } catch (error) {
+
+            console.log('Error[Step:remove]: ' + error);
+            return sR.sendResponse(res, 400, null, error);
+        }
+
+    }
+}

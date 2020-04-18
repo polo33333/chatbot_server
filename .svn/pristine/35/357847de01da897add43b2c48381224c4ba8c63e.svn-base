@@ -1,0 +1,191 @@
+const Memory = require('../models/Memory,model');
+const Block = require('../models/Block.model');
+const Step = require('../models/Step.model');
+const Intent = require('../models/Intent.model');
+const Zalo = require('../controllers/Zalo.controller');
+const fetch = require('node-fetch');
+const config = require('../../config');
+
+
+
+
+exports.getAnswer = async function (sender_id, botId, text, platForm, platForm_token) {
+
+    try {
+        if (botId != null && text != null) {
+            const response = await fetch('https://api.wit.ai/message' + config.version + '&q=' + encodeURI(text), {
+                method: "GET",
+                headers: { Authorization: config.auth + botId },
+            });
+
+            const json = await response.json();
+            if (Object.keys(json.entities).length != 0) {
+                return await FindData(sender_id, botId, json, platForm, platForm_token);
+            }
+
+            else {
+                let bloc = await Block.findOne({ botId: botId, isDefaut: true });
+                let defaut_answer = await Step.findOne({ blockId: bloc._id });
+                let sendObject = {};
+                sendObject.content = defaut_answer.items[0].content;
+                sendObject.template_type = "text";
+                sendObject.button = [];
+                if (platForm == 'zalo') {
+                    return await Zalo.sendMessage(sender_id, sendObject, platForm_token);
+                }
+            }
+
+        }
+        return null;
+    } catch (error) {
+        console.log('Error[M_Core:getAnswer]: ' + error);
+        return null;
+    }
+};
+
+FindData = async function (sender_id, botId, jsons, platForm, platForm_token) {
+
+    try {
+        var mem = await setMemmory(sender_id, botId, jsons);
+
+        while (mem.work[0] !=undefined) {
+                        //form-card
+                        if (mem.work[0].type == 'form-card') {
+                            if (mem.variable.length > 0) {
+            
+                                if (mem.variable[0].name == mem.work[0].variable) {
+                                    removeItemOfWork(mem);
+                                } else {
+                                    if (platForm == 'zalo') {
+                                        await Zalo.sendMessage(sender_id, mem.work[0], platForm_token);
+                                        removeItemOfWork(mem);
+                                        return;
+                                    }
+            
+                                }
+                            } else {
+                                if (platForm == 'zalo') {
+                                    await Zalo.sendMessage(sender_id, mem.work[0], platForm_token);
+                                    removeItemOfWork(mem);
+                                    return;
+                                }
+                            }
+                        } else
+                        //text-card
+                        if (mem.work[0].type == 'text-card') {
+                            if (platForm == 'zalo') {
+                                await Zalo.sendMessage(sender_id, mem.work[0], platForm_token);
+                                removeItemOfWork(mem);
+                            }
+                        } else
+                        if (mem.work[0].type == 'info-card') {
+                            await Zalo.sendMessage(sender_id, mem.work[0], platForm_token);
+                                removeItemOfWork(mem);
+                        }
+
+        }
+        return;
+    } catch (error) {
+        console.log('Error[M_Core:FindData]: ' + error);
+        return;
+    }
+};
+
+
+setMemmory = async function (sender_id, botId, json) {
+
+    try {
+        var mem = await Memory.findOne({ senderId: sender_id });
+        if (mem) {
+
+            if (json.entities['intent']) {
+                let work = await getWork(json.entities['intent'][0].value, botId);
+                //console.log(work);
+                if (json.entities['goi_cuoc']) {
+                    mem.variable = [{ name: 'goi_cuoc', value: json.entities['goi_cuoc'][0].value }];
+                }
+
+                else {
+                    mem.variable = [];
+                }
+                mem.work = work;
+            } else {
+                if (json.entities['goi_cuoc']) {
+                    mem.variable = [{ name: 'goi_cuoc', value: json.entities['goi_cuoc'][0].value }];
+                }
+            }
+
+            return await mem.save(mem);
+        }
+        else {
+            var obj = {};
+            obj.senderId = sender_id;
+            obj.botId = botId;
+            obj.variable = [];
+            if (json.entities['intent']) {
+                let work = await getWork(json.entities['intent'][0].value, botId);
+                if (json.entities['goi_cuoc']) {
+                    obj.variable = [{ name: 'goi_cuoc', value: json.entities['goi_cuoc'][0].value }];
+                }
+
+                else {
+                    obj.variable = [];
+                }
+                obj.work = work;
+            }
+            return await Memory.create(obj);
+        }
+    } catch (error) {
+        console.log('Error[M_Core:setMemmory]: ' + error);
+        return null;
+    }
+
+
+
+}
+
+getWork = async function (intentName, botId) {
+    try {
+        let works = [];
+        if (intentName) {
+            let bloc = await Block.findOne({ intentName: intentName, botId: botId });
+            if (bloc) {
+                let step = await Step.find({ blockId: bloc._id });
+                if (step)
+                    for (let i = 0; i < step.length; i++) {
+                        let el = step[i];
+                        if (el.type == "form-card") {
+                            if (el.items.length > 0) {
+                                for (let i1 = 0; i1 < el.items.length; i1++) {
+                                    let el1 = el.items[i1];
+                                    works.push(el1);
+                                }
+                            }
+
+                        } else {
+                            if (el.type == "text-card") {
+                                works.push(el.items[0]);
+
+                            } else
+                                works.push(el.items[0]);
+                        }
+                    }
+
+            }
+        }
+        return works.length == 0 ? [] : works;
+    } catch (error) {
+        console.log('Error[M_Core:getWork]: ' + error);
+        return [];
+    }
+}
+
+removeItemOfWork = async function (obj) {
+   try {
+    obj.work.shift();
+    await obj.save(obj);
+   } catch (error) {
+    console.log('Error[M_Core:removeItemOfWork]: ' + error);
+    return;
+   }
+}
