@@ -861,7 +861,7 @@ const httpOptions = {
 let BotService = class BotService {
     constructor(http) {
         this.http = http;
-        this.baseUrl = src_environments_environment__WEBPACK_IMPORTED_MODULE_3__["environment"].apiEndpoint;
+        this.baseUrl = src_environments_environment__WEBPACK_IMPORTED_MODULE_3__["environment"].apiEndpoint + '/api/';
         this.getAllBots = () => {
             return this.http.get(this.baseUrl + 'Ai/Bots');
         };

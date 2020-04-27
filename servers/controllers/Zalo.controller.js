@@ -1,16 +1,11 @@
 
-
-const Answer = require('../models/Answer.model');
 const Core = require('../functions/M_Core.function');
-const M_History = require('../functions/M_History.function');
 const sR = require('../functions/M_SendResponse.function');
 const message = require('../functions/C_String.function');
 const fetch = require('node-fetch');
 const Config = require('../models/Config.model');
 const config = require('../../config');
-
-
-
+const zalo = 'zalo';
 
 exports.webhook = async function (req, res) {
     try {
@@ -18,19 +13,21 @@ exports.webhook = async function (req, res) {
         var zaloTemp = req.body;
         const con = await Config.findOne({ botId: req.params.botId });
         var _token = con.zalo_token;
-        //console.log(zaloTemp);
         if (zaloTemp.event_name == 'user_send_text') {
-            await Core.getAnswer(zaloTemp.sender.id, req.params.botId, zaloTemp.message.text, 'zalo', _token);
+            let chechText = zaloTemp.message.text.search('{');
+            if (chechText != -1)
+                await Core.handlePostback(zaloTemp.sender.id, zaloTemp.message.text, zalo, _token, req.params.botId);
+            else
+                await Core.handleMessage(zaloTemp.sender.id, zaloTemp.message.text, zalo, _token, req.params.botId);
             return sR.sendResponse(res, 200, null, message.getSuccess);
         }
         return sR.sendResponse(res, 200, null, message.getSuccess);
-
     } catch (error) {
-
         console.log('Error[Zalo:webhook]: ' + error);
         return sR.sendResponse(res, 200, null, error);
     }
 };
+
 
 // get by id
 exports.sendMessage = async function (senderId, temp_message, access_token) {
@@ -40,11 +37,27 @@ exports.sendMessage = async function (senderId, temp_message, access_token) {
         switch (temp_message.template_type) {
             case "text":
                 sendObject = text_template(senderId, temp_message);
-                //sendObject = list_template(senderId, temp_message);
                 break;
             case "list":
                 sendObject = list_template(senderId, temp_message);
                 break;
+            case "list_product": {
+                //console.log(temp_message)
+                if (temp_message.elememts != undefined)
+                    for (let i = 0; i < temp_message['elememts'].length; i++) {
+                        let el = temp_message.elememts[i];
+                        sendObject = list_product_template(senderId, el);
+                        await fetch("https://openapi.zalo.me/v2.0/oa/message?access_token=" + access_token, {
+                            method: "POST",
+                            body: JSON.stringify(
+                                sendObject
+                            )
+                        });
+                        await new Promise(resolve => setTimeout(resolve, 800));
+                    }
+                return;
+            }
+            //break;
             case "media":
                 sendObject = media_template(senderId, temp_message);
                 break;
@@ -60,8 +73,9 @@ exports.sendMessage = async function (senderId, temp_message, access_token) {
                 sendObject
             )
         });
+        //console.log(sendObject)
         const json = await response.json();
-        //console.log(json);
+        //console.log(json)
         await new Promise(resolve => setTimeout(resolve, 800));
         return;
 
@@ -117,6 +131,36 @@ list_template = function (senderId, temp_message) {
     };
     sendObject.recipient.user_id = senderId;
     sendObject.message.attachment.payload.elements = add_element(temp_message.elememts);
+    sendObject.message.attachment.payload.buttons = add_button(temp_message.button);
+    return sendObject;
+
+}
+
+list_product_template = function (senderId, temp_message) {
+    let sendObject = {
+        recipient: {
+            user_id: "",
+        },
+        message: {
+            attachment: {
+                type: "template",
+                payload: {
+                    template_type: "list",
+                    elements: [{
+                        title: "",
+                        subtitle: "",
+                        image_url: "",
+                    }
+                    ],
+                    buttons: [
+
+                    ]
+                }
+            }
+        }
+    };
+    sendObject.recipient.user_id = senderId;
+    sendObject.message.attachment.payload.elements[0] = { title: temp_message.title, subtitle: temp_message.subtitle == null ? '' : temp_message.subtitle, image_url: config.server_url + temp_message.image_url };
     sendObject.message.attachment.payload.buttons = add_button(temp_message.button);
     return sendObject;
 
@@ -288,7 +332,7 @@ add_element = function (elememts) {
             };
 
             elit.title = elememts[it].title;
-            elit.subtitle = elememts[it].subtitle;
+            elit.subtitle = elememts[it].subtitle == null ? '' : elememts[it].subtitle;
             elit.image_url = config.server_url + elememts[it].image_url;
             elit.default_action = add_default_action(elememts[it].default_action);
             items.push(elit);

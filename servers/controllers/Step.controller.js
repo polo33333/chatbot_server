@@ -14,7 +14,7 @@ module.exports = {
         try {
 
             const { blockId } = req.params;
-            const bloc = await Step.find({ blockId: blockId }).sort({ position : 1});
+            const bloc = await Step.find({ blockId: blockId }).sort({ position: 1 });
             return sR.sendResponse(res, 200, bloc, message.getSuccess);
 
         } catch (error) {
@@ -49,9 +49,9 @@ module.exports = {
             obj.blockId = blockId;
             obj.botId = botId;
             obj.position = 0;
-            let step_list = await Step.find({blockId: blockId});
-            if(step_list.length>0){
-                obj.position = step_list[step_list.length-1].position +1;
+            let step_list = await Step.find({ blockId: blockId });
+            if (step_list.length > 0) {
+                obj.position = step_list[step_list.length - 1].position + 1;
             }
             let step = await Step.create(obj);
             if (step)
@@ -130,10 +130,10 @@ update_Card_Info = async function (res, obj) {
     try {
         let step = await Step.findById(obj._id);
         if (step) {
-            if (obj.name !=undefined) {
+            if (obj.name != undefined) {
                 step.name = obj.name;
-            } else if (obj.position !=undefined) {
-                await update_Card_Position(obj.position,step.blockId);
+            } else if (obj.position != undefined) {
+                await update_Card_Position(obj.position, step.blockId);
                 return sR.sendResponse(res, 200, null, message.updateSuccess);
             }
             await step.save();
@@ -187,7 +187,7 @@ update_Card_Item = async function (res, obj) {
             case 'info-card':
                 {
                     if (obj.action == 'add')
-                        step.items[0].elememts.push({ title: null, subtitle: null, image_url: config.default_image, default_action: null });
+                        step.items[0].elememts.push({ title: 'Tiêu đề', subtitle: null, image_url: config.default_image, default_action: null });
                     else if (obj.action == 'update') {
                         if (obj.title != undefined)
                             step.items[0].elememts[obj.index].title = obj.title;
@@ -208,7 +208,7 @@ update_Card_Item = async function (res, obj) {
             case 'product-card':
                 {
                     if (obj.action == 'add')
-                        step.items[0].elememts.push({ title: null, subtitle: null, value: null, image_url: config.default_image, button: [] });
+                        step.items[0].elememts.push({ title: 'Tiêu đề', subtitle: null, value: null, image_url: config.default_image, button: [] });
                     else if (obj.action == 'update') {
                         if (obj.variable != undefined)
                             step.items[0].variable = obj.variable;
@@ -256,16 +256,16 @@ update_Card_Item = async function (res, obj) {
             case 'memory-card':
                 {
                     if (obj.action == 'add')
-                        step.items[0].setVariables.push({ variable: null, value: null});
+                        step.items[0].setVariables.push({ variable: null, value: null });
                     else if (obj.action == 'update') {
                         if (obj.isRemoveAll != undefined)
                             step.items[0].isRemoveAll = obj.isRemoveAll;
                         if (obj.removeVariables != undefined)
                             step.items[0].removeVariables = obj.removeVariables;
 
-                            if (obj.variable != undefined)
+                        if (obj.variable != undefined)
                             step.items[0].setVariables[obj.index].variable = obj.variable;
-                            if (obj.value != undefined)
+                        if (obj.value != undefined)
                             step.items[0].setVariables[obj.index].value = obj.value;
 
                     } else if (obj.action == 'delete') {
@@ -279,6 +279,30 @@ update_Card_Item = async function (res, obj) {
             // break;
             case 'api-card':
                 {
+                    if (obj.action == 'add')
+                        step.items[0].headers.push({ name: null, value: null });
+                    else if (obj.action == 'update') {
+                        if (obj.method != undefined)
+                            step.items[0].method = obj.method;
+                        if (obj.url != undefined)
+                            step.items[0].url = obj.url;
+                        if (obj.body != undefined)
+                            step.items[0].body = obj.body;
+                        if (obj.name != undefined)
+                            step.items[0].headers[obj.index].name = obj.name;
+                        if (obj.value != undefined)
+                            step.items[0].headers[obj.index].value = obj.value;
+                        if (obj.show_error != undefined)
+                            step.items[0].show_error = obj.show_error;
+                        if (obj.show_error_content != undefined)
+                            step.items[0].show_error_content = obj.show_error_content;
+
+                    } else if (obj.action == 'delete') {
+                        if (obj.index != undefined)
+                            step.items[0].headers.splice(obj.index, 1);
+                    }
+                    step.markModified('items');
+                    await step.save();
                     return sR.sendResponse(res, 200, null, message.updateSuccess);
                 }
             // break;
@@ -599,21 +623,21 @@ image_Card_Button = async function (res, obj) {
     }
 }
 
-update_Card_Position = async function(position, blockId){
+update_Card_Position = async function (position, blockId) {
 
-    let step_list = await Step.find({blockId: blockId});
+    let step_list = await Step.find({ blockId: blockId });
 
 
     for (let i = 0; i < step_list.length; i++) {
         let el = step_list[i];
         for (let i1 = 0; i1 < position.length; i1++) {
             let el1 = position[i1];
-            if(el._id == el1){
+            if (el._id == el1) {
                 el.position = i1;
                 break;
             }
         }
         await el.save();
     }
-    return ;
+    return;
 }

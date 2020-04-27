@@ -2,6 +2,7 @@ const Bot = require('../models/Bot.model');
 const Intent = require('../models/Intent.model');
 const Entity = require('../models/Entity.model');
 const Sample = require('../models/Sample.model');
+const UnknowRequest = require('../models/UnknowRequest.model');
 const sR = require('../functions/M_SendResponse.function');
 const message = require('../functions/C_String.function');
 const fetch = require('node-fetch');
@@ -98,6 +99,7 @@ module.exports = {
             const json = await response.json();
             //console.log(json);
             if (json.sent == true) {
+                await UnknowRequest.findOneAndDelete({text: object.text, botId: botId});
                 return sR.sendResponse(res, 200, null, message.createSuccess);
             }
             else {

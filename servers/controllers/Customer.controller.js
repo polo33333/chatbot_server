@@ -1,9 +1,8 @@
 
-const Config = require('../models/Config.model');
-const History = require('../models/History.model');
+const Customer = require('../models/Customer.model');
 const sR = require('../functions/M_SendResponse.function');
 const message = require('../functions/C_String.function');
-const fetch = require('node-fetch');
+
 
 module.exports = {
 
@@ -12,12 +11,12 @@ module.exports = {
         try {
 
             const { botId } = req.params;
-            const his = await History.find({ botId: botId}).sort({createdAt: -1});                    
-            return sR.sendResponse(res, 200, his, message.getSuccess);
+            const cus = await Customer.find({ botId: botId}).sort({createdAt: -1});                    
+            return sR.sendResponse(res, 200, cus, message.getSuccess);
 
         } catch (error) {
 
-            console.log('Error[Answer:getAll]: ' + error);
+            console.log('Error[Customer:getAll]: ' + error);
             return sR.sendResponse(res, 400, null, error);
         }
     },
@@ -25,24 +24,23 @@ module.exports = {
     // get by id
     getById: async (req, res) => {
         try {
-            const { historyId } = req.params;
-            const his = await History.findById(historyId);            
-            return sR.sendResponse(res, 200, his, message.getSuccess);
+            const { customerId } = req.params;
+            const cus = await Customer.findById(customerId);            
+            return sR.sendResponse(res, 200, cus, message.getSuccess);
 
         } catch (error) {
 
-            console.log('Error[History:getById]: ' + error);
+            console.log('Error[Customer:getById]: ' + error);
             return sR.sendResponse(res, 400, null, error);
         }
     },
-
 
     // remove method with id
     remove: async (req, res) => {
         try {
 
-            const { historyId } = req.params;
-            const his = await History.findByIdAndRemove(historyId);
+            const { customerId } = req.params;
+            const his = await Customer.findByIdAndRemove(customerId);
             if (his) {
                 return sR.sendResponse(res, 200, null, message.deleteSuccess);
             }
@@ -50,7 +48,7 @@ module.exports = {
 
         } catch (error) {
 
-            console.log('Error[History:remove]: ' + error);
+            console.log('Error[Customer:remove]: ' + error);
             return sR.sendResponse(res, 400, null, error);
         }
 

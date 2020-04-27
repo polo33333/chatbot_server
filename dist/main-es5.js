@@ -957,9 +957,9 @@
 
     const environment = {
       production: false,
-      // apiEndpoint: 'http://localhost:3000/api/'
-      // apiEndpoint: '/api/'
-      apiEndpoint: 'https://chatbox.tpsoft.vn/api/'
+      // apiEndpoint: 'http://localhost:3000'
+      // apiEndpoint: ''
+      apiEndpoint: 'https://chatbox.tpsoft.vn'
     };
     /*
      * For easier debugging in development mode, you can import the following file

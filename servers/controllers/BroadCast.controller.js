@@ -5,8 +5,10 @@ const Config = require('../models/Config.model');
 const sR = require('../functions/M_SendResponse.function');
 const message = require('../functions/C_String.function');
 const fetch = require('node-fetch');
-const config = require('../../config');
-
+const conf = require('../../config');
+const M_BroadCast_handling = require('../functions/M_BroadCast_handling.function');
+const zalo = 'zalo';
+const face = 'facebook';
 
 module.exports = {
 
@@ -15,7 +17,7 @@ module.exports = {
         try {
 
             const { botId } = req.params;
-            const ans = await BroadCast.find({ 'isSchedule': false, botId: botId}).sort({ createdAt: -1 });
+            const ans = await BroadCast.find({ 'isSchedule': false, botId: botId }).sort({ createdAt: -1 });
             return sR.sendResponse(res, 200, ans, message.getSuccess);
 
         } catch (error) {
@@ -29,7 +31,7 @@ module.exports = {
     getSchedule: async (req, res) => {
         try {
             const { botId } = req.params;
-            const ans = await BroadCast.find({ 'isSchedule': true,botId: botId}).sort({ createdAt: -1 });
+            const ans = await BroadCast.find({ 'isSchedule': true, botId: botId }).sort({ createdAt: -1 });
             return sR.sendResponse(res, 200, ans, message.getSuccess);
 
         } catch (error) {
@@ -47,7 +49,25 @@ module.exports = {
             const con = await Config.findOne({ botId: botId });
             var obj = req.body;
             if (!obj.isSchedule) {
-                sendBroadCast(obj.attachment_id, con.zalo_token);
+                switch (obj.platForm) {
+                    case zalo:
+                        {
+                            await M_BroadCast_handling.handleZaloBroadCast(obj.blockId, botId);
+                        }
+                        break;
+                    case face:
+                        {
+                            await M_BroadCast_handling.handleFaceBroadCast(obj.blockId, botId);
+                        }
+                        break;
+
+                    default: {
+                        await M_BroadCast_handling.handleFaceBroadCast(obj.blockId, botId);
+                        await M_BroadCast_handling.handleZaloBroadCast(obj.blockId, botId);
+                    }
+                        break;
+                }
+
             }
             await BroadCast.create(obj);
             return sR.sendResponse(res, 200, null, message.createSuccess);
@@ -87,49 +107,3 @@ module.exports = {
     }
 }
 
-
-sendBroadCast = async (attachment_id, _token) => {
-
-    try {
-        var send = {
-            recipient: {
-                target: {
-                    gender: "0",
-                    cities: "4"
-                }
-            },
-            message: {
-                attachment: {
-                    type: "template",
-                    payload: {
-                        template_type: "media",
-                        elements: [
-                            {
-                                media_type: "article",
-                                attachment_id: attachment_id
-                            }
-                        ] 
-                    }
-                    
-                }
-            }
-        }
-
-        const resWit = await fetch('https://openapi.zalo.me/v2.0/oa/message?access_token=' + _token, {
-            method: "POST",
-            body: JSON.stringify(
-                send
-            )
-        });
-        const json = await resWit.json();
-        //console.log(json);
-        if (json.error == 0)
-            return true;
-        return false;
-
-    }
-    catch (error) {
-        console.log('Error[BroadCast:send]: ' + error);
-        return false;
-    }
-}

@@ -22,7 +22,7 @@ module.exports = {
             console.log('Error[Article:getAll]: ' + error);
             return sR.sendResponse(res, 400, null, error);
         }
-        
+
     },
 
     // get by id
@@ -42,46 +42,55 @@ module.exports = {
     // create
     create: async (req, res) => {
         try {
+           
 
             const { botId } = req.params;
             const con = await Config.findOne({ botId: botId });
-            var obj = req.body;            
+            var obj = req.body;
+
+
+            obj.botId = botId;
+            console.log(obj)
+            await Article.create(obj);
+
+
+            
             var objCreate = {
                 cover: {
-                  //photo_url: config.imgUrl,
-                  photo_url: "https://chatbox.tpsoft.vn/images/default_image.png",
-                  //photo_url: obj.photo_url,
-                  cover_type: "photo",
-                  status: "show"
+                    photo_url: config.server_url+ obj.image_url,
+                    cover_type: "photo",
+                    status: "show"
                 },
                 type: "normal",
                 title: obj.title,
                 description: obj.description,
                 author: "admin",
                 body: [
-                  {
-                    type: "text",
-                    content: obj.content
-                  }
+                    {
+                        type: "text",
+                        content: obj.content
+                    }
                 ],
                 status: "show",
                 comment: "show"
-              };              
+            };
             const resWit = await fetch('https://openapi.zalo.me/v2.0/article/create?access_token=' + con.zalo_token, {
                 method: "POST",
                 body: JSON.stringify(objCreate)
             });
-            const json = await resWit.json();            
+            
+            const json = await resWit.json();
+            console.log(json)
             await new Promise(resolve => setTimeout(resolve, 1800));
-            const resVerify = await fetch('https://openapi.zalo.me/v2.0/article/verify?access_token=' + con.zalo_token, {                
+            const resVerify = await fetch('https://openapi.zalo.me/v2.0/article/verify?access_token=' + con.zalo_token, {
                 method: "POST",
-                body: JSON.stringify({                    
+                body: JSON.stringify({
                     token: json.data.token,
                 })
             });
 
-            const jsonVerify = await resVerify.json();            
-            if (json.error ==0) {
+            const jsonVerify = await resVerify.json();
+            if (jsonVerify.error == 0) {
                 obj.article_id = jsonVerify.data.id;
                 obj.botId = botId;
                 await Article.create(obj);
@@ -99,16 +108,15 @@ module.exports = {
     update: async (req, res) => {
         try {
 
-            const { botId,articleId } = req.params;
+            const { botId, articleId } = req.params;
             const con = await Config.findOne({ botId: botId });
             const art = await Article.findById(articleId);
             var obj = req.body;
             var objCreate = {
                 cover: {
-                  //photo_url: config.imgUrl,
-                  photo_url: "https://chatbox.tpsoft.vn/images/default_image.png",
-                  cover_type: "photo",
-                  status: "show"
+                    photo_url: config.server_url+ obj.image_url,
+                    cover_type: "photo",
+                    status: "show"
                 },
                 type: "normal",
                 id: obj.article_id,
@@ -116,14 +124,14 @@ module.exports = {
                 description: obj.description,
                 author: "admin",
                 body: [
-                  {
-                    type: "text",
-                    content: obj.content                    
-                  }
+                    {
+                        type: "text",
+                        content: obj.content
+                    }
                 ],
                 status: "show",
                 comment: "show"
-              };
+            };
 
             const resWit = await fetch('https://openapi.zalo.me/v2.0/article/update?access_token=' + con.zalo_token, {
                 method: "POST",
@@ -133,11 +141,11 @@ module.exports = {
             });
             const json = await resWit.json();
             if (json.error == 0) {
-                
+
                 art.title = obj.title;
                 art.description = obj.description;
-                art.content = obj.content;    
-                console.log(obj.content);            
+                art.content = obj.content;
+  
                 await art.save(art);
                 return sR.sendResponse(res, 200, null, message.updateSuccess);
             }
@@ -166,7 +174,7 @@ module.exports = {
             });
 
             const json = await resWit.json();
-            if (json.error ==0)
+            if (json.error == 0)
                 await Article.findByIdAndRemove(articleId);
             return sR.sendResponse(res, 200, null, message.deleteSuccess);
 

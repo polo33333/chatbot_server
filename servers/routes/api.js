@@ -6,11 +6,11 @@ const Entity = require('../controllers/Entity.controller');
 const Sample = require('../controllers/Sample.controller');
 const Keyword = require('../controllers/Keywords.controller');
 const Synonym = require('../controllers/Synonyms.controller');
-const Answer = require('../controllers/Answer.controller');
 const Block = require('../controllers/Block.controller');
 const Step = require('../controllers/Step.controller');
 const Config = require('../controllers/Config.controller');
 const History = require('../controllers/History.controller');
+const Customer = require('../controllers/Customer.controller');
 const UnknowRequest = require('../controllers/UnknowRequest.controller');
 const Article = require('../controllers/Article.controller');
 const BroadCast = require('../controllers/BroadCast.controller');
@@ -35,7 +35,6 @@ router.get('/Ai/Bots/:botId', Bot.getById);
 router.post('/Ai/Bots', Bot.create);
 router.delete('/Ai/Bots/:botId', Bot.remove);
 
-
 // Intents
 router.get('/Ai/Bots/:botId/Intents', Intent.getAll);
 router.get('/Ai/Bots/:botId/Intents/:intentId', Intent.getById);
@@ -57,8 +56,8 @@ router.post('/Ai/Bots/:botId/Entities/:entityId/Keywords/remove', Keyword.remove
 // Synonyms
 router.post('/Ai/Bots/:botId/Entities/:entityId/Synonyms/create', Synonym.create);
 router.post('/Ai/Bots/:botId/Entities/:entityId/Synonyms/remove', Synonym.remove);
-//Samples
 
+//Samples
 router.get('/Ai/Bots/:botId/intents/:intentId/Samples', Sample.getByIntentId);
 router.post('/Ai/Bots/:botId/Samples', Sample.create);
 router.post('/Ai/Bots/:botId/Samples/Remove', Sample.remove);
@@ -66,16 +65,9 @@ router.post('/Ai/Bots/:botId/Samples/Remove', Sample.remove);
 //underStrand
 router.post('/Ai/Bots/:botId/UnderStrand', Sample.getUnderStrand);
 
-//Answers
-router.get('/Ai/Bots/:botId/intents/:intentId/Answers', Answer.getAll);
-router.get('/Ai/Bots/:botId/intents/:intentId/Answers/:answerId', Answer.getById);
-router.post('/Ai/Bots/:botId/intents/:intentId/Answers', Answer.create);
-router.put('/Ai/Bots/:botId/intents/:intentId/Answers/:answerId', Answer.update);
-router.delete('/Ai/Bots/:botId/intents/:intentId/Answers/:answerId', Answer.remove);
-
-
 //Block
 router.get('/Ai/Bots/:botId/Blocks', Block.getAll);
+router.get('/Ai/Bots/:botId/Blocks/Menu', Block.getMenu);
 router.get('/Ai/Bots/:botId/Blocks/Defaut', Block.getDefaut);
 router.get('/Ai/Bots/:botId/Blocks/:blockId', Block.getById);
 router.post('/Ai/Bots/:botId/Blocks', Block.create);
@@ -98,9 +90,13 @@ router.put('/Ai/Bots/:botId/Config', Config.update);
 
 //History
 router.get('/Ai/Bots/:botId/History', History.getAll);
-router.get('/Ai/Bots/:botId/UserInFor/:senderId', History.getUserInFor);
-router.get('/Ai/Bots/:botId/UserFollower', History.getUserFollower);
+router.get('/Ai/Bots/:botId/HIstory/:historyId', History.getById);
 router.delete('/Ai/Bots/:botId/History/:historyId', History.remove);
+
+//Customer
+router.get('/Ai/Bots/:botId/Customer', Customer.getAll);
+router.get('/Ai/Bots/:botId/Customer/:customerId', Customer.getById);
+router.delete('/Ai/Bots/:botId/Customer/:customerId', Customer.remove);
 
 //UnknowRequest
 router.get('/Ai/Bots/:botId/UnknowRequest', UnknowRequest.getAll);

@@ -1,14 +1,16 @@
 const Memory = require('../models/Memory,model');
 const Block = require('../models/Block.model');
 const Step = require('../models/Step.model');
-const Intent = require('../models/Intent.model');
+//const Intent = require('../models/Intent.model');
 const Entity = require('../models/Entity.model');
 const Zalo = require('../controllers/Zalo.controller');
+const FaceBook = require('../controllers/Facebook.controller');
+const M_Message_handling = require('../functions/M_Message_handling.function');
 const fetch = require('node-fetch');
 const config = require('../../config');
 
 const zalo = 'zalo';
-const face = 'facebook'
+const face = 'facebook';
 const default_answer = '$default_answer';
 const text_card = 'text-card';
 const form_card = 'form-card';
@@ -20,58 +22,86 @@ const memory_card = 'memory-card';
 const api_card = 'api-card';
 const not_found = 'Không có kết quả phù hợp với yêu cầu của bạn!';
 
-exports.getAnswer = async function (sender_id, botId, text, platForm, platForm_token) {
+exports.handleMessage = async function (sender_id, text, platForm, platForm_token, botId) {
+
+    try {
+       
+        if (text != null) {
+            let mem = await getMemmory(sender_id, platForm, botId);
+            let works = mem.works;
+            let works2 = await getWorks(default_answer, botId);
+            let ctm = await M_Message_handling.handleCustomer(sender_id, platForm, platForm_token, botId);
+            await M_Message_handling.handleLiveChat(text, sender_id, true, 'text', botId);
+            let json = await getWit(text, botId);
+
+            if (json != null && Object.keys(json.entities).length != 0) {
+                if (json.entities['intent']) {
+                    // need update
+                    works = await getWorks(json.entities['intent'][0].value, botId);
+                    await M_Message_handling.handleHistory(sender_id, ctm.name, text, json.entities['intent'][0].value, 1, json.entities['intent'][0].confidence, botId);
+                } else {
+                    await M_Message_handling.handleHistory(sender_id, ctm.name, text, null, 0, null, botId);
+                    await suggestIntent(sender_id, json.entities, mem._id, platForm_token, botId);
+                }
+                await setVariables(mem._id, json);
+            }
+            else {
+                await M_Message_handling.handleUnknowRequest(text, sender_id, botId);
+                await M_Message_handling.handleHistory(sender_id, ctm.name, text, null, 0, null, botId);
+                works = mergeArray(works2, works);
+            }
+
+            mem.works = works;
+            await mem.save();
+            return await findData(sender_id, mem._id, platForm_token, botId);
+        }
+        return null;
+    } catch (error) {
+        console.log('Error[M_Core:handleMessage]: ' + error);
+        return null;
+    }
+};
+
+exports.handlePostback = async function (sender_id, text, platForm, platForm_token, botId) {
 
     try {
         if (text != null) {
             let mem = await getMemmory(sender_id, platForm, botId);
-            let chechText = text.search('{');
             let works = mem.works;
             let works2 = await getWorks(default_answer, botId);
-            if (chechText != -1) {
+            let ctm = await M_Message_handling.handleCustomer(sender_id, platForm, platForm_token, botId);
+            let obj = JSON.parse(text);
 
-                let obj = JSON.parse(text);
-                if (obj.redirectToBlock != null) {
-                    works = await getWorks(obj.redirectToBlock, botId);
-                    if (obj.value != null) {
-                        let json = await getWit(text, botId);
-                        if (json != null && Object.keys(json.entities).length != 0) {
-                            await setVariables(mem._id, json);
-                        }
-                        else {
+            if (obj.redirectToBlock != null) {
 
-                            works = mergeArray(works2, works);
-                        }
+                works = await getWorks(obj.redirectToBlock, botId);
+                await M_Message_handling.handleHistory(sender_id, ctm.name, text, null, 2, null, botId);
+                await M_Message_handling.handleLiveChat(obj, sender_id, true, 'btn', botId);
+
+                if (obj.value != null) {
+                    let json = await getWit(text, botId);
+                    if (json != null && Object.keys(json.entities).length != 0) {
+                        await setVariables(mem._id, json);
                     }
-                }
-            }
-            else {
+                    else {
 
-                let json = await getWit(text, botId);
-                if (json != null && Object.keys(json.entities).length != 0) {
-                    if (json.entities['intent'])
-                        works = await getWorks(json.entities['intent'][0].value, botId);
-                    await setVariables(mem._id, json);
-                }
-                else {
-                    works = mergeArray(works2, works);
+                        works = mergeArray(works2, works);
+                    }
                 }
             }
 
             mem.works = works;
             await mem.save();
-            return await findData(sender_id, mem._id, platForm_token);
+            return await findData(sender_id, mem._id, platForm_token, botId);
         }
         return null;
     } catch (error) {
-        console.log('Error[M_Core:getAnswer]: ' + error);
+        console.log('Error[M_Core:handlePostback]: ' + error);
         return null;
     }
 };
 
-
-findData = async function (sender_id, memoryId, platForm_token) {
-
+findData = async function (sender_id, memoryId, platForm_token, botId) {
     try {
         let mem = await Memory.findById(memoryId);
         while (mem.works[0] != undefined) {
@@ -85,7 +115,7 @@ findData = async function (sender_id, memoryId, platForm_token) {
                             //await mem.save();
                         } else {
                             await mem.save()
-                            await sendMessage(sender_id, mem.works[0], mem.platForm, platForm_token);
+                            await sendMessage(sender_id, mem.works[0], mem.platForm, platForm_token, botId);
                             return;
                         }
 
@@ -93,7 +123,7 @@ findData = async function (sender_id, memoryId, platForm_token) {
                     break;
                 case text_card:
                     {
-                        await sendMessage(sender_id, mem.works[0], mem.platForm, platForm_token);
+                        await sendMessage(sender_id, mem.works[0], mem.platForm, platForm_token, botId);
                         mem.works.shift();
                         //await mem.save();
                     }
@@ -101,7 +131,7 @@ findData = async function (sender_id, memoryId, platForm_token) {
                 case info_card:
                     {
 
-                        await sendMessage(sender_id, mem.works[0], mem.platForm, platForm_token);
+                        await sendMessage(sender_id, mem.works[0], mem.platForm, platForm_token, botId);
                         mem.works.shift();
                         //await mem.save();
                     }
@@ -112,22 +142,20 @@ findData = async function (sender_id, memoryId, platForm_token) {
                         for (let i = 0; i < mem.variables.length; i++) {
                             let el = mem.variables[i];
                             if (el.entityName == pro.variable) {
-                                let res = pro.elememts.find(o => o.value.toLowerCase() === el.value.toLowerCase());
-                                if (res) {
+                                let res_product = pro.elememts.filter(o => o.value.toLowerCase() === el.value.toLowerCase());
+                                if (res_product) {
                                     let obj_pro = {};
-                                    obj_pro['elememts'] = [{ title: res.title, subtitle: res.subtitle, image_url: res.image_url, default_action: null }];
-                                    obj_pro['button'] = res.button;
-                                    obj_pro['template_type'] = 'list';
+                                    obj_pro['elememts'] = res_product;
+                                    obj_pro['template_type'] = 'list_product';
                                     obj_pro['type'] = 'product-card';
-                                    await sendMessage(sender_id, obj_pro, mem.platForm, platForm_token);
-                                } else{
+                                    await sendMessage(sender_id, obj_pro, mem.platForm, platForm_token, botId);
+                                } else {
                                     let obj_pro = {};
-                                    //obj_pro['elememts'] = [{ title: res.title, subtitle: res.subtitle, image_url: res.image_url, default_action: null }];
                                     obj_pro['content'] = not_found;
                                     obj_pro['button'] = [];
                                     obj_pro['template_type'] = 'text';
                                     obj_pro['type'] = 'product-card';
-                                    await sendMessage(sender_id, obj_pro, mem.platForm, platForm_token);
+                                    await sendMessage(sender_id, obj_pro, mem.platForm, platForm_token, botId);
                                 }
                             }
                         }
@@ -137,12 +165,8 @@ findData = async function (sender_id, memoryId, platForm_token) {
                     break;
                 case image_card:
                     {
-                        await sendMessage(sender_id, mem.works[0], mem.platForm, platForm_token);
+                        await sendMessage(sender_id, mem.works[0], mem.platForm, platForm_token, botId);
                         mem.works.shift();
-                        // let mem_temp = await Memory.findById(memoryId);
-                        // mem_temp.works = mem.works;
-                        // await mem_temp.save();
-
                     }
                     break;
                 case go_to_card:
@@ -159,14 +183,13 @@ findData = async function (sender_id, memoryId, platForm_token) {
                     {
                         await removetVariable(memoryId, mem.works[0]);
                         mem.works.shift();
-                        // let mem_temp = await Memory.findById(memoryId);
-                        // mem_temp.works = mem.works;
-                        // await mem_temp.save();
 
                     }
                     break;
                 case api_card:
                     {
+                        await apifunc(memoryId, mem.works[0]);
+                        mem.works.shift();
                     }
                     break;
 
@@ -182,6 +205,20 @@ findData = async function (sender_id, memoryId, platForm_token) {
     }
 };
 
+suggestIntent = async function (sender_id, obj, memoryId, platForm_token, botId) {
+    try {
+        console.log('suggest')
+        let mem = await Memory.findById(memoryId);
+        let works2 = await getWorks(default_answer, botId);
+        mem.works = works2;
+        await mem.save();
+        return await findData(sender_id, memoryId, platForm_token, botId);
+
+    } catch (error) {
+        console.log('Error[M_Core:suggestIntent]: ' + error);
+        return;
+    }
+}
 
 getMemmory = async function (sender_id, platForm, botId) {
     let mem = await Memory.findOne({ senderId: sender_id, botId: botId });
@@ -248,6 +285,7 @@ getWit = async function (text, botId) {
         return null;
     }
 }
+
 // return list work
 getWorks = async function (intentName, botId) {
     try {
@@ -255,7 +293,7 @@ getWorks = async function (intentName, botId) {
         let bloc = await Block.findOne({ intentName: intentName, botId: botId });
 
         if (bloc) {
-            let step = await Step.find({ blockId: bloc._id }).sort({ position : 1})
+            let step = await Step.find({ blockId: bloc._id }).sort({ position: 1 })
             if (step)
                 for (let i = 0; i < step.length; i++) {
                     let el = step[i];
@@ -279,6 +317,12 @@ getWorks = async function (intentName, botId) {
                         case "go-to-card":
                             {
                                 if (el.items[0].blockName)
+                                    works.push(el.items[0]);
+                            }
+                            break;
+                        case "api-card":
+                            {
+                                if (el.items[0].method != null && el.items[0].url != '' && el.items[0].url != null)
                                     works.push(el.items[0]);
                             }
                             break;
@@ -308,7 +352,6 @@ mergeArray = function (arr1, arr2) {
         return [];
     }
 }
-
 
 // removetVariable
 removetVariable = async function (memoryId, obj) {
@@ -352,10 +395,75 @@ removetVariable = async function (memoryId, obj) {
     }
 }
 
+// get value of Variable
+getVariable = function (variableName, mem) {
+    try {
+        let temp = mem.variables.find(o => o.entityName === variableName);
+        if (temp) {
+            return temp.value;
+        }
+        return null;
+    } catch (error) {
+        console.log('Error[M_Core:getVariable]: ' + error);
+        return null;
+    }
+}
 
-sendMessage = async function (sender_id, data, platForm, platForm_token) {
+// api process
+apifunc = async function (memoryId, obj) {
+    try {
+        let mem = await Memory.findById(memoryId);
+        let myHeaders = {};
+        if (obj.headers.length > 0) {
+            for (let i = 0; i < obj.headers.length; i++) {
+                let el = obj.headers[i];
+                myHeaders[el.name] = el.value;
+            }
+        }
+        if (obj.method == 'GET') {
+
+            let getRes = await fetch(obj.url, {
+                method: "GET",
+                headers: myHeaders
+            });
+            let jsong = await getRes.json();
+            //console.log(jsong);
+            if (jsong) {
+                //do something
+            }
+        }
+        if (obj.method == 'POST') {
+            let obj_temp = {};
+            if (obj.body.length > 0) {
+                for (let i2 = 0; i2 < obj.body.length; i2++) {
+                    let el2 = obj.body[i2];
+                    obj_temp[el2] = getVariable(el2, mem);
+                }
+            }
+            let postRes = await fetch(obj.url, {
+                method: "POST",
+                headers: myHeaders,
+                body: JSON.stringify(obj_temp)
+            });
+            let jsonp = await postRes.json();
+            if (jsonp) {
+                //do something
+            }
+
+        }
+        //await mem.save();
+        return;
+
+    } catch (error) {
+        console.log('Error[M_Core:apifunc]: ' + error);
+        return;
+    }
+}
+
+sendMessage = async function (sender_id, data, platForm, platForm_token, botId) {
     if (platForm == zalo)
         await Zalo.sendMessage(sender_id, data, platForm_token);
-    else if (mem.platForm == face)
-        await Zalo.sendMessage(sender_id, data, platForm_token);
+    else if (platForm == face)
+        await FaceBook.sendMessage(sender_id, data, platForm_token);
+    await M_Message_handling.handleLiveChat(data, sender_id, false, null, botId);
 }
