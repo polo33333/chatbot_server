@@ -6,8 +6,7 @@ var serviceSchema = new Schema({
     lang: { type: String, default: 'vi' },
     desc: String,
     appId: String,
-    botId: String,
-    isActive: { type: Boolean, default: true },
+    botId: String
 },
     {
         timestamps: true

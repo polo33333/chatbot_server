@@ -2,10 +2,12 @@ const History = require('../models/History.model');
 const UnknowRequest = require('../models/UnknowRequest.model');
 const Customer = require('../models/Customer.model');
 const LiveChat = require('../models/LiveChat.model');
+const Reminder = require('../models/Reminder.model');
+const Config = require('../models/Config.model');
 const fetch = require('node-fetch');
 const zalo = 'zalo';
 const face = 'facebook';
-
+const sever = require('../../server');
 
 exports.handleUnknowRequest = async function (text, senderId, botId) {
 
@@ -85,9 +87,34 @@ exports.handleLiveChat = async function (message, senderId, isSender, template_t
         lc.items = message;
         lc.template_type = template_type;
         lc.botId = botId;
+        let conf = await Config.findOne({ botId: botId })
+        if (isSender && conf.isReminder) {
+            let remind = await Reminder.findOne({ senderId: senderId, botId: botId });
+            if (remind) {
+                remind.timeOut = conf.reminder_timeout;
+                await remind.save()
+            } else {
+                await Reminder.create({ senderId: senderId, botId: botId, timeOut: conf.reminder_timeout })
+            }
+
+        }
+        sever.callsocket('live_chat', { senderId: senderId, botId: botId ,data: lc});
         return await LiveChat.create(lc);
     } catch (error) {
         console.log('Error[M_Message_handling:handleLiveChat]: ' + error);
         return null;
+    }
+};
+
+exports.handleSupport = async function (senderId, botId) {
+
+    try {
+        let curr = await Customer.findOne({ senderId: senderId, botId: botId, isSupport: true });
+        if (curr)
+            return true;
+        return false
+    } catch (error) {
+        console.log('Error[M_Message_handling:handleSupport]: ' + error);
+        return false;
     }
 };

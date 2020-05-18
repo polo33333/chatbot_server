@@ -12,7 +12,7 @@ module.exports = {
         try {
 
             const { botId } = req.params;
-            const his = await History.find({ botId: botId}).sort({createdAt: -1});                    
+            const his = await History.find({ botId: botId}).sort({createdAt: -1}).limit(500);                    
             return sR.sendResponse(res, 200, his, message.getSuccess);
 
         } catch (error) {

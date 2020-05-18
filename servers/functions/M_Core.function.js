@@ -1,13 +1,16 @@
 const Memory = require('../models/Memory,model');
 const Block = require('../models/Block.model');
 const Step = require('../models/Step.model');
-//const Intent = require('../models/Intent.model');
+const SupportRequest = require('../models/SupportRequest.model');
+const Customer = require('../models/Customer.model');
 const Entity = require('../models/Entity.model');
 const Zalo = require('../controllers/Zalo.controller');
 const FaceBook = require('../controllers/Facebook.controller');
 const M_Message_handling = require('../functions/M_Message_handling.function');
 const fetch = require('node-fetch');
 const config = require('../../config');
+const sever = require('../../server');
+const Notification = require('../controllers/Notification.controller');
 
 const zalo = 'zalo';
 const face = 'facebook';
@@ -20,42 +23,48 @@ const go_to_card = 'go-to-card';
 const image_card = 'image-card';
 const memory_card = 'memory-card';
 const api_card = 'api-card';
+const support_card = 'support-card';
 const not_found = 'Không có kết quả phù hợp với yêu cầu của bạn!';
 
 exports.handleMessage = async function (sender_id, text, platForm, platForm_token, botId) {
 
     try {
-       
-        if (text != null) {
-            let mem = await getMemmory(sender_id, platForm, botId);
-            let works = mem.works;
-            let works2 = await getWorks(default_answer, botId);
-            let ctm = await M_Message_handling.handleCustomer(sender_id, platForm, platForm_token, botId);
-            await M_Message_handling.handleLiveChat(text, sender_id, true, 'text', botId);
-            let json = await getWit(text, botId);
+        let curr = await M_Message_handling.handleSupport(sender_id, botId);
+        if (curr) {
+            await M_Message_handling.handleLiveChat([{ content: text }], sender_id, true, 'text', botId);
+            return null;
+        } else {
+            if (text != null) {
+                let mem = await getMemmory(sender_id, platForm, botId);
+                let works = mem.works;
+                let works2 = await getWorks(default_answer, botId);
+                let ctm = await M_Message_handling.handleCustomer(sender_id, platForm, platForm_token, botId);
+                await M_Message_handling.handleLiveChat([{ content: text }], sender_id, true, 'text', botId);
+                let json = await getWit(text, botId);
 
-            if (json != null && Object.keys(json.entities).length != 0) {
-                if (json.entities['intent']) {
-                    // need update
-                    works = await getWorks(json.entities['intent'][0].value, botId);
-                    await M_Message_handling.handleHistory(sender_id, ctm.name, text, json.entities['intent'][0].value, 1, json.entities['intent'][0].confidence, botId);
-                } else {
-                    await M_Message_handling.handleHistory(sender_id, ctm.name, text, null, 0, null, botId);
-                    await suggestIntent(sender_id, json.entities, mem._id, platForm_token, botId);
+                if (json != null && Object.keys(json.entities).length != 0) {
+                    if (json.entities['intent']) {
+                        // need update
+                        works = await getWorks(json.entities['intent'][0].value, botId);
+                        await M_Message_handling.handleHistory(sender_id, ctm.name, text, json.entities['intent'][0].value, 1, json.entities['intent'][0].confidence, botId);
+                    } else {
+                        await M_Message_handling.handleHistory(sender_id, ctm.name, text, null, 0, null, botId);
+                        await suggestIntent(sender_id, json.entities, mem._id, platForm_token, botId);
+                    }
+                    await setVariables(mem._id, json);
                 }
-                await setVariables(mem._id, json);
-            }
-            else {
-                await M_Message_handling.handleUnknowRequest(text, sender_id, botId);
-                await M_Message_handling.handleHistory(sender_id, ctm.name, text, null, 0, null, botId);
-                works = mergeArray(works2, works);
-            }
+                else {
+                    await M_Message_handling.handleUnknowRequest(text, sender_id, botId);
+                    await M_Message_handling.handleHistory(sender_id, ctm.name, text, null, 0, null, botId);
+                    works = mergeArray(works2, works);
+                }
 
-            mem.works = works;
-            await mem.save();
-            return await findData(sender_id, mem._id, platForm_token, botId);
+                mem.works = works;
+                await mem.save();
+                return await findData(sender_id, mem._id, platForm_token, botId);
+            }
+            return null;
         }
-        return null;
     } catch (error) {
         console.log('Error[M_Core:handleMessage]: ' + error);
         return null;
@@ -65,36 +74,43 @@ exports.handleMessage = async function (sender_id, text, platForm, platForm_toke
 exports.handlePostback = async function (sender_id, text, platForm, platForm_token, botId) {
 
     try {
-        if (text != null) {
-            let mem = await getMemmory(sender_id, platForm, botId);
-            let works = mem.works;
-            let works2 = await getWorks(default_answer, botId);
-            let ctm = await M_Message_handling.handleCustomer(sender_id, platForm, platForm_token, botId);
-            let obj = JSON.parse(text);
+        let curr = await M_Message_handling.handleSupport(sender_id, botId);
+        if (curr) {
+            await M_Message_handling.handleLiveChat([obj], sender_id, true, 'btn', botId);
+            return null;
+        } else {
+            if (text != null) {
+                let mem = await getMemmory(sender_id, platForm, botId);
+                let works = mem.works;
+                let works2 = await getWorks(default_answer, botId);
+                let ctm = await M_Message_handling.handleCustomer(sender_id, platForm, platForm_token, botId);
+                let obj = JSON.parse(text);
 
-            if (obj.redirectToBlock != null) {
+                if (obj.redirectToBlock != null) {
 
-                works = await getWorks(obj.redirectToBlock, botId);
-                await M_Message_handling.handleHistory(sender_id, ctm.name, text, null, 2, null, botId);
-                await M_Message_handling.handleLiveChat(obj, sender_id, true, 'btn', botId);
+                    works = await getWorks(obj.redirectToBlock, botId);
+                    await M_Message_handling.handleHistory(sender_id, ctm.name, text, null, 2, null, botId);
+                    await M_Message_handling.handleLiveChat(obj, sender_id, true, 'btn', botId);
 
-                if (obj.value != null) {
-                    let json = await getWit(text, botId);
-                    if (json != null && Object.keys(json.entities).length != 0) {
-                        await setVariables(mem._id, json);
-                    }
-                    else {
+                    if (obj.value != null) {
+                        let json = await getWit(text, botId);
+                        if (json != null && Object.keys(json.entities).length != 0) {
+                            await setVariables(mem._id, json);
+                        }
+                        else {
 
-                        works = mergeArray(works2, works);
+                            works = mergeArray(works2, works);
+                        }
                     }
                 }
-            }
 
-            mem.works = works;
-            await mem.save();
-            return await findData(sender_id, mem._id, platForm_token, botId);
+                mem.works = works;
+                await mem.save();
+                return await findData(sender_id, mem._id, platForm_token, botId);
+            }
+            return null;
         }
-        return null;
+
     } catch (error) {
         console.log('Error[M_Core:handlePostback]: ' + error);
         return null;
@@ -189,6 +205,12 @@ findData = async function (sender_id, memoryId, platForm_token, botId) {
                 case api_card:
                     {
                         await apifunc(memoryId, mem.works[0]);
+                        mem.works.shift();
+                    }
+                    break;
+                case support_card:
+                    {
+                        await supportfunc(memoryId, mem.works[0]);
                         mem.works.shift();
                     }
                     break;
@@ -460,10 +482,38 @@ apifunc = async function (memoryId, obj) {
     }
 }
 
+// support process
+supportfunc = async function (memoryId, obj) {
+    try {
+        let mem = await Memory.findById(memoryId);
+        if (mem) {
+            let cus = await Customer.findOne({ senderId: mem.senderId, botId: mem.botId });
+            let temp = {};
+            temp.senderId = mem.senderId;
+            temp.name = cus.name;
+            temp.phone = cus.phone;
+            temp.botId = mem.botId;
+            temp.items = mem.variables;
+            temp.gender = cus.gender;
+            temp.platForm = cus.platForm;
+            temp.intentName = obj.intentName;
+            await SupportRequest.create(temp);
+            sever.callsocket('support_request', { senderId: mem.senderId, botId: mem.botId });
+            await Notification.create(mem.botId, 'Yêu cầu hỗ trợ', 'support_request', { senderId: mem.senderId, botId: mem.botId })
+        }
+
+        return;
+
+    } catch (error) {
+        console.log('Error[M_Core:supportfunc]: ' + error);
+        return;
+    }
+}
+
 sendMessage = async function (sender_id, data, platForm, platForm_token, botId) {
     if (platForm == zalo)
         await Zalo.sendMessage(sender_id, data, platForm_token);
     else if (platForm == face)
         await FaceBook.sendMessage(sender_id, data, platForm_token);
-    await M_Message_handling.handleLiveChat(data, sender_id, false, null, botId);
+    await M_Message_handling.handleLiveChat([data], sender_id, false, null, botId);
 }

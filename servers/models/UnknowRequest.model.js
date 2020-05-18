@@ -7,8 +7,8 @@ var serviceSchema = new Schema(
         text: String,
         botId: String,
     },
-    { versionKey: false },
     {
+        versionKey: false,
         timestamps: true
     }
 )

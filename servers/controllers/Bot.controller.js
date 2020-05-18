@@ -1,4 +1,5 @@
 const Bot = require('../models/Bot.model');
+const Config = require('../models/Config.model');
 const sR = require('../functions/M_SendResponse.function');
 const message = require('../functions/C_String.function');
 const fetch = require('node-fetch');
@@ -7,7 +8,7 @@ const config = require('../../config');
 module.exports = {
 
     // get all
-    getAll: async (req, res) => {
+    getAll: async (req, res, next) => {
         try {
             const result = await Bot.find();
             return sR.sendResponse(res, 200, result, message.getSuccess);
@@ -41,7 +42,7 @@ module.exports = {
 
             var obj = req.body;
             // create app in wit.ai
-            const resWit = await fetch('https://api.wit.ai/apps' + config.version, {
+            let resWit = await fetch('https://api.wit.ai/apps' + config.version, {
                 method: "POST",
                 headers: { Authorization: config.auth + config.access_token },
                 body: JSON.stringify({
@@ -49,14 +50,24 @@ module.exports = {
                     lang: obj.lang,
                     private: "true",
                     desc: obj.desc,
+                    timezone: "Asia/Ho_Chi_Minh"
                 })
             });
-            const json = await resWit.json();
+            let json = await resWit.json();
             // create bot in bd when wit.ai create app success
             if (json.error == undefined) {
                 obj.appId = json.app_id;
                 obj.botId = json.access_token;
-                const bot = await Bot.create(obj);
+                let bot = await Bot.create(obj);
+                if (bot)
+                    await Config.create(
+                        {
+                            botId: bot.botId, zalo_webhook: config.server_url + '/' + bot.botId + '/Zalo/Webhook',
+                            fa_webhook: config.server_url + '/' + bot.botId + '/Facebook/Webhook',
+                            fa_verify_token: Date.now().toString()
+                        }
+                    );
+
                 return sR.sendResponse(res, 200, bot, message.createSuccess);
             }
             return sR.sendResponse(res, 400, null, message.createFail);
@@ -86,7 +97,7 @@ module.exports = {
             const json = await response.json();
 
             if (json.error == undefined) {
-                let bot = await Bot.findOneAndDelete({botId: botId});
+                let bot = await Bot.findOneAndDelete({ botId: botId });
                 return sR.sendResponse(res, 200, bot, message.deleteSuccess);
             }
 

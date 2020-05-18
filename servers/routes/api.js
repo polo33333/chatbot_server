@@ -12,10 +12,14 @@ const Config = require('../controllers/Config.controller');
 const History = require('../controllers/History.controller');
 const Customer = require('../controllers/Customer.controller');
 const UnknowRequest = require('../controllers/UnknowRequest.controller');
+const SupportRequest = require('../controllers/SupportRequest.controller');
 const Article = require('../controllers/Article.controller');
 const BroadCast = require('../controllers/BroadCast.controller');
 const Zalo = require('../controllers/Zalo.controller');
 const Facebook = require('../controllers/Facebook.controller');
+const LiveChat = require('../controllers/LiveChat.controller');
+const Notification = require('../controllers/Notification.controller');
+const Statistic = require('../controllers/Statistic.controller');
 const FileUpload = require('../controllers/FileUpload.controller');
 const uploadMulter = require('../functions/M_ModelMulter.function');
 
@@ -96,6 +100,8 @@ router.delete('/Ai/Bots/:botId/History/:historyId', History.remove);
 //Customer
 router.get('/Ai/Bots/:botId/Customer', Customer.getAll);
 router.get('/Ai/Bots/:botId/Customer/:customerId', Customer.getById);
+router.get('/Ai/Bots/:botId/getUserFollower', Customer.getUserFollower);
+router.put('/Ai/Bots/:botId/Customer/:customerId', Customer.update);
 router.delete('/Ai/Bots/:botId/Customer/:customerId', Customer.remove);
 
 //UnknowRequest
@@ -103,12 +109,31 @@ router.get('/Ai/Bots/:botId/UnknowRequest', UnknowRequest.getAll);
 router.get('/Ai/Bots/:botId/UnknowRequest/:requestId', UnknowRequest.getById);
 router.delete('/Ai/Bots/:botId/UnknowRequest/:requestId', UnknowRequest.remove);
 
+//SupportRequest
+router.get('/Ai/Bots/:botId/SupportRequest', SupportRequest.getAll);
+router.get('/Ai/Bots/:botId/SupportRequest/:requestId', SupportRequest.getById);
+router.delete('/Ai/Bots/:botId/SupportRequest/:requestId', SupportRequest.remove);
+
 //Article
 router.get('/Ai/Bots/:botId/Articles', Article.getAll);
 router.get('/Ai/Bots/:botId/Articles/:articleId', Article.getById);
 router.post('/Ai/Bots/:botId/Articles', Article.create);
 router.put('/Ai/Bots/:botId/Articles/:articleId', Article.update);
 router.delete('/Ai/Bots/:botId/Articles/:articleId', Article.remove);
+
+//LiveChat
+router.get('/Ai/Bots/:botId/LiveChats/:customerId', LiveChat.getById);
+router.post('/Ai/Bots/:botId/LiveChats', LiveChat.create);
+router.delete('/Ai/Bots/:botId/LiveChats/:liveChatId', LiveChat.remove);
+
+//Notification
+router.get('/Ai/Bots/:botId/Notifications', Notification.getAll);
+router.delete('/Ai/Bots/:botId/Notifications/:notificationId', Notification.remove);
+
+//Statistic
+router.get('/Ai/Bots/:botId/Statistics/getInfo', Statistic.getInfo);
+router.get('/Ai/Bots/:botId/Statistics/getChart1', Statistic.getChart1);
+router.get('/Ai/Bots/:botId/Statistics/getChart2', Statistic.getChart2);
 
 //BroadCast
 router.get('/Ai/Bots/:botId/BroadCast/getHistrory', BroadCast.getHistrory);

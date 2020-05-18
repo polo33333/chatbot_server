@@ -160,7 +160,7 @@ list_product_template = function (senderId, temp_message) {
         }
     };
     sendObject.recipient.user_id = senderId;
-    sendObject.message.attachment.payload.elements[0] = { title: temp_message.title, subtitle: temp_message.subtitle == null ? '' : temp_message.subtitle, image_url: config.server_url + temp_message.image_url };
+    sendObject.message.attachment.payload.elements[0] = { title: temp_message.title, subtitle: temp_message.subtitle == null ? ' ' : temp_message.subtitle == ''? ' ': temp_message.subtitle, image_url: config.server_url + temp_message.image_url };
     sendObject.message.attachment.payload.buttons = add_button(temp_message.button);
     return sendObject;
 
@@ -332,7 +332,7 @@ add_element = function (elememts) {
             };
 
             elit.title = elememts[it].title;
-            elit.subtitle = elememts[it].subtitle == null ? '' : elememts[it].subtitle;
+            elit.subtitle = elememts[it].subtitle == null ? ' ' : elememts[it].subtitle == ''? ' ': elememts[it].subtitle;
             elit.image_url = config.server_url + elememts[it].image_url;
             elit.default_action = add_default_action(elememts[it].default_action);
             items.push(elit);

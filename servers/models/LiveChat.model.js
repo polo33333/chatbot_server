@@ -5,7 +5,7 @@ var serviceSchema = new Schema(
     {
         senderId: String,
         isSender: { type: Boolean, default: false},
-        items: Object,
+        items: [],
         template_type: String,
         botId: String,
     },
