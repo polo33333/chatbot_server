@@ -10,3 +10,5 @@ exports.deleteSuccess = 'Delete success!';
 exports.deleteFail = 'Delete not success!';
 exports.noToken = 'No token provided!';
 exports.authenticateFail = 'Failed to authenticate token!';
+exports.accessFail = 'Failed to authenticate!';
+exports.accessSuccess = 'Success to authenticate!';

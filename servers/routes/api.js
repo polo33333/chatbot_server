@@ -20,6 +20,7 @@ const Facebook = require('../controllers/Facebook.controller');
 const LiveChat = require('../controllers/LiveChat.controller');
 const Notification = require('../controllers/Notification.controller');
 const Statistic = require('../controllers/Statistic.controller');
+const Auth = require('../controllers/Auth.controller');
 const FileUpload = require('../controllers/FileUpload.controller');
 const uploadMulter = require('../functions/M_ModelMulter.function');
 
@@ -141,6 +142,15 @@ router.get('/Ai/Bots/:botId/BroadCast/getSchedule', BroadCast.getSchedule);
 router.post('/Ai/Bots/:botId/BroadCast', BroadCast.create);
 // router.put('/Ai/Bots/:botId/Articles/:articleId', Article.update);
 router.delete('/Ai/Bots/:botId/BroadCast/:broadCastId', BroadCast.remove);
+
+
+//Auth
+router.get('/Ai/Auth', Auth.getAllUser);
+router.get('/Ai/Auth/:userId', Auth.getUserById);
+router.post('/Ai/Auth/Login', Auth.login);
+router.post('/Ai/Auth', Auth.createUser);
+router.put('/Ai/Auth/:userId', Auth.updateUser);
+router.delete('/Ai/Auth/:userId', Auth.removeUser);
 
 //Webhook
 router.post('/Ai/Bots/:botId/Zalo/Webhook', Zalo.webhook);

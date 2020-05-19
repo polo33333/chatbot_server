@@ -483,7 +483,7 @@ module.exports = exported;
 
 /***/ }),
 
-/***/ 4:
+/***/ 8:
 /*!***********************************************************************************************!*\
   !*** multi ./node_modules/@angular/material/prebuilt-themes/indigo-pink.css ./src/styles.css ***!
   \***********************************************************************************************/
@@ -496,5 +496,5 @@ module.exports = __webpack_require__(/*! C:\Users\TRAND\Desktop\Dev\chatbot-clie
 
 /***/ })
 
-},[[4,"runtime"]]]);
+},[[8,"runtime"]]]);
 //# sourceMappingURL=styles-es2015.js.map
