@@ -168,10 +168,12 @@ update_Card_Item = async function (res, obj) {
             case 'form-card':
                 {
                     if (obj.action == 'add')
-                        step.items.push({ variable: null, content: null, defaut_action: "", button: [], template_type: "text", type: "form-card" });
+                        step.items.push({ isRequireVariable: true, variable: null, validation: null, content: null, defaut_action: "", button: [], template_type: "text", type: "form-card" });
                     else if (obj.action == 'update') {
                         if (obj.variable != undefined)
                             step.items[obj.index].variable = obj.variable;
+                        if (obj.validation != undefined)
+                            step.items[obj.index].validation = obj.validation;
                         if (obj.content != undefined)
                             step.items[obj.index].content = obj.content;
 
@@ -306,6 +308,29 @@ update_Card_Item = async function (res, obj) {
                     return sR.sendResponse(res, 200, null, message.updateSuccess);
                 }
             // break;
+            case 'support-card':
+                {
+                    if (obj.content != undefined) {
+                        step.items[0].content = obj.content;
+
+                        step.markModified('items');
+                        await step.save();
+                    }
+                    return sR.sendResponse(res, 200, null, message.updateSuccess);
+                }
+
+            case 'phone-card':
+                {
+                    if (obj.content != undefined) {
+                        step.items[0].content = obj.content;
+                    }
+                    if (obj.saveToVariable != undefined) {
+                        step.items[0].saveToVariable = obj.saveToVariable;
+                    }
+                    step.markModified('items');
+                    await step.save();
+                    return sR.sendResponse(res, 200, null, message.updateSuccess);
+                }
             default:
                 return sR.sendResponse(res, 400, null, message.updateFail);
         }

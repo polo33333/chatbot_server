@@ -24,9 +24,10 @@ const image_card = 'image-card';
 const memory_card = 'memory-card';
 const api_card = 'api-card';
 const support_card = 'support-card';
+const phone_card = 'phone-card';
 const not_found = 'Không có kết quả phù hợp với yêu cầu của bạn!';
 
-exports.handleMessage = async function (sender_id, text, platForm, platForm_token, botId) {
+exports.handleMessage1 = async function (sender_id, text, platForm, platForm_token, botId) {
 
     try {
         let curr = await M_Message_handling.handleSupport(sender_id, botId);
@@ -34,36 +35,107 @@ exports.handleMessage = async function (sender_id, text, platForm, platForm_toke
             await M_Message_handling.handleLiveChat([{ content: text }], sender_id, true, 'text', botId);
             return null;
         } else {
-            if (text != null) {
-                let mem = await getMemmory(sender_id, platForm, botId);
-                let works = mem.works;
-                let works2 = await getWorks(default_answer, botId);
-                let ctm = await M_Message_handling.handleCustomer(sender_id, platForm, platForm_token, botId);
-                await M_Message_handling.handleLiveChat([{ content: text }], sender_id, true, 'text', botId);
-                let json = await getWit(text, botId);
+            let mem = await getMemmory(sender_id, platForm, botId);
+            let works = mem.works;
+            let works2 = await getWorks(default_answer, botId);
+            let ctm = await M_Message_handling.handleCustomer(sender_id, platForm, platForm_token, botId);
+            await M_Message_handling.handleLiveChat([{ content: text }], sender_id, true, 'text', botId);
+            let json = await getWit(text, botId);
 
-                if (json != null && Object.keys(json.entities).length != 0) {
+            if (json != null && Object.keys(json.entities).length != 0) {
+                if (json.entities['intent']) {
+                    // need update
+                    works = await getWorks(json.entities['intent'][0].value, botId);
+                    await M_Message_handling.handleHistory(sender_id, ctm.name, text, json.entities['intent'][0].value, 1, json.entities['intent'][0].confidence, botId);
+                } else {
+                    await M_Message_handling.handleHistory(sender_id, ctm.name, text, null, 0, null, botId);
+                    await suggestIntent(sender_id, json.entities, mem._id, platForm_token, botId);
+                }
+                await setVariables(mem._id, json);
+            }
+            else {
+                await M_Message_handling.handleUnknowRequest(text, sender_id, botId);
+                await M_Message_handling.handleHistory(sender_id, ctm.name, text, null, 0, null, botId);
+                works = mergeArray(works2, works);
+            }
+
+            mem.works = works;
+            await mem.save();
+            return await findData(sender_id, mem._id, platForm_token, botId);
+
+        }
+    } catch (error) {
+        console.log('Error[M_Core:handleMessage]: ' + error);
+        return null;
+    }
+};
+
+
+exports.handleMessage = async function (sender_id, text, platForm, platForm_token, botId) {
+
+    try {
+        let curr = await M_Message_handling.handleSupport(sender_id, botId);
+        if (curr) { //stop bot answer when user request support
+            await M_Message_handling.handleLiveChat([{ content: text }], sender_id, true, 'text', botId);
+            return null;
+        } else {
+            let mem = await getMemmory(sender_id, platForm, botId);
+            let works = mem.works;
+            let ctm = await M_Message_handling.handleCustomer(sender_id, platForm, platForm_token, botId);
+            await M_Message_handling.handleLiveChat([{ content: text }], sender_id, true, 'text', botId);
+            let json = await getWit(text, botId);
+
+            if (works.length != 0) {
+
+                if (json != null) {
                     if (json.entities['intent']) {
-                        // need update
                         works = await getWorks(json.entities['intent'][0].value, botId);
+                        await setVariables(mem._id, json);
                         await M_Message_handling.handleHistory(sender_id, ctm.name, text, json.entities['intent'][0].value, 1, json.entities['intent'][0].confidence, botId);
                     } else {
-                        await M_Message_handling.handleHistory(sender_id, ctm.name, text, null, 0, null, botId);
-                        await suggestIntent(sender_id, json.entities, mem._id, platForm_token, botId);
+                        if (works[0].isRequireVariable == undefined) {
+                            let works2 = await getWorks(default_answer, botId);
+                            await M_Message_handling.handleUnknowRequest(text, sender_id, botId);
+                            await M_Message_handling.handleHistory(sender_id, ctm.name, text, null, 0, null, botId);
+                            works = mergeArray(works2, works);
+                        }
+
                     }
-                    await setVariables(mem._id, json);
                 }
                 else {
+                    if (works[0].isRequireVariable == undefined) {
+                        let works2 = await getWorks(default_answer, botId);
+                        await M_Message_handling.handleUnknowRequest(text, sender_id, botId);
+                        await M_Message_handling.handleHistory(sender_id, ctm.name, text, null, 0, null, botId);
+                        works = mergeArray(works2, works);
+                    }
+                }
+
+            } else {
+                if (json != null) {
+                    if (json.entities['intent']) {
+                        works = await getWorks(json.entities['intent'][0].value, botId);
+                        await setVariables(mem._id, json);
+                        await M_Message_handling.handleHistory(sender_id, ctm.name, text, json.entities['intent'][0].value, 1, json.entities['intent'][0].confidence, botId);
+                    } else {
+                        let works2 = await getWorks(default_answer, botId);
+                        await M_Message_handling.handleUnknowRequest(text, sender_id, botId);
+                        await M_Message_handling.handleHistory(sender_id, ctm.name, text, null, 0, null, botId);
+                        works = mergeArray(works2, works);
+                    }
+
+                }
+                else {
+                    let works2 = await getWorks(default_answer, botId);
                     await M_Message_handling.handleUnknowRequest(text, sender_id, botId);
                     await M_Message_handling.handleHistory(sender_id, ctm.name, text, null, 0, null, botId);
                     works = mergeArray(works2, works);
                 }
-
-                mem.works = works;
-                await mem.save();
-                return await findData(sender_id, mem._id, platForm_token, botId);
             }
-            return null;
+            mem.works = works;
+            await mem.save();
+            return await findData(text, sender_id, mem._id, platForm_token, botId);
+
         }
     } catch (error) {
         console.log('Error[M_Core:handleMessage]: ' + error);
@@ -106,7 +178,7 @@ exports.handlePostback = async function (sender_id, text, platForm, platForm_tok
 
                 mem.works = works;
                 await mem.save();
-                return await findData(sender_id, mem._id, platForm_token, botId);
+                return await findData(text, sender_id, mem._id, platForm_token, botId);
             }
             return null;
         }
@@ -117,23 +189,29 @@ exports.handlePostback = async function (sender_id, text, platForm, platForm_tok
     }
 };
 
-findData = async function (sender_id, memoryId, platForm_token, botId) {
+findData = async function (text, sender_id, memoryId, platForm_token, botId) {
     try {
         let mem = await Memory.findById(memoryId);
         while (mem.works[0] != undefined) {
             switch (mem.works[0].type) {
                 case form_card:
                     {
-
                         let obj = mem.variables.find(o => o.entityName === mem.works[0].variable);
                         if (obj != undefined) {
                             mem.works.shift();
-                            //await mem.save();
-                        } else {
-                            await mem.save()
-                            await sendMessage(sender_id, mem.works[0], mem.platForm, platForm_token, botId);
-                            return;
+                        } else{
+                            if (Validate(mem.works[0].validation, text)) {
+                                setVariables_noWit(memoryId, mem.works[0].variable, text);
+                                text = null;
+                                mem.works.shift();
+                            }
+                            else {
+                                await mem.save()
+                                await sendMessage(sender_id, mem.works[0], mem.platForm, platForm_token, botId);
+                                return;
+                            }
                         }
+                        
 
                     }
                     break;
@@ -210,8 +288,30 @@ findData = async function (sender_id, memoryId, platForm_token, botId) {
                     break;
                 case support_card:
                     {
-                        await supportfunc(memoryId, mem.works[0]);
+                        await supportfunc(memoryId, mem.works[0], platForm_token);
                         mem.works.shift();
+                    }
+                    break;
+                case phone_card:
+                    {
+
+                        if (Validate(mem.works[0].validation, text)) {
+                            if (mem.works[0].saveToVariable) {
+                                setVariables_noWit(memoryId, mem.works[0].saveToVariable, text.replace(/\s/g, ''));
+                            }
+                            mem.works.shift();
+                            let cus = await Customer.findOne({ senderId: sender_id, botId: botId });
+                            if (cus) {
+                                cus.phone = text.replace(/\s/g, '');
+                                await cus.save();
+                            }
+                            text = null;
+                        }
+                        else {
+                            await mem.save()
+                            await sendMessage(sender_id, mem.works[0], mem.platForm, platForm_token, botId);
+                            return;
+                        }
                     }
                     break;
 
@@ -285,6 +385,30 @@ setVariables = async function (memoryId, json) {
         return;
     } catch (error) {
         console.log('Error[M_Core:setVariables]: ' + error);
+        return;
+    }
+}
+
+setVariables_noWit = async function (memoryId, variable, text) {
+    try {
+        let mem = await Memory.findById(memoryId);
+        if (mem) {
+
+            let obj = mem.variables.find(o => o.entityName === variable);
+            if (obj) {
+                let index = mem.variables.indexOf(obj);
+                if (index != -1) {
+                    mem.variables[index] = { entityName: variable, value: text };
+                }
+            } else
+                mem.variables.push({ entityName: variable, value: text });
+
+            await mem.save();
+            return;
+        }
+        return;
+    } catch (error) {
+        console.log('Error[M_Core:setVariables_noWit]: ' + error);
         return;
     }
 }
@@ -483,7 +607,7 @@ apifunc = async function (memoryId, obj) {
 }
 
 // support process
-supportfunc = async function (memoryId, obj) {
+supportfunc = async function (memoryId, obj, platForm_token) {
     try {
         let mem = await Memory.findById(memoryId);
         if (mem) {
@@ -497,6 +621,12 @@ supportfunc = async function (memoryId, obj) {
             temp.gender = cus.gender;
             temp.platForm = cus.platForm;
             temp.intentName = obj.intentName;
+
+            let obj_pro = {};
+            obj_pro['content'] = obj.content;
+            obj_pro['button'] = [];
+            obj_pro['template_type'] = 'text';
+            await sendMessage(mem.senderId, obj_pro, mem.platForm, platForm_token, mem.botId);
             await SupportRequest.create(temp);
             sever.callsocket('support_request', { senderId: mem.senderId, botId: mem.botId });
             await Notification.create(mem.botId, 'Yêu cầu hỗ trợ', 'support_request', { senderId: mem.senderId, botId: mem.botId })
@@ -507,6 +637,52 @@ supportfunc = async function (memoryId, obj) {
     } catch (error) {
         console.log('Error[M_Core:supportfunc]: ' + error);
         return;
+    }
+}
+
+//validate 
+Validate = function (type, text) {
+
+    try {
+        let phoneno = /^\d{10}$/;
+        let mailformat = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+        let numbers = /^[0-9]+$/;
+
+        if (text)
+            switch (type) {
+                case null:
+                    {
+                        return true;
+                    }
+                case 'phone':
+                    {
+                        if (text.replace(/\s/g, '').match(phoneno))
+                            return true;
+                        return false;
+                    }
+                //break;
+                case 'email':
+                    {
+                        if (text.replace(/\s/g, '').match(mailformat))
+                            return true;
+                        return false;
+                    }
+                // break;
+                case 'number':
+                    {
+                        if (text.replace(/\s/g, '').match(numbers))
+                            return true;
+                        return false;
+                    }
+                // break;
+                default:
+                    return false;
+            }
+
+        return false
+    } catch (error) {
+        console.log('Error[M_Core:Validate]: ' + error);
+        return false;
     }
 }
 

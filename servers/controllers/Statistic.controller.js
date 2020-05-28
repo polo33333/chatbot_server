@@ -63,19 +63,16 @@ module.exports = {
         try {
 
             const { botId } = req.params;
-
-            let curr = new Date; // get current date
-            let first = curr.getDate();
             let live = await LiveChat.find({botId: botId, isSender: true});
             let arr = [0,0,0,0,0,0,0]
+            let arrDate = getDayAvariable();
             if(live){
                 let j =0;
-                for (let i0 = first; i0 > first -6; i0--) {
-                    
+                for (let i0 = 0; i0 < arrDate.length; i0++) {
+                    let curr = arrDate[i0];
                     for (let i = 0; i < live.length; i++) {
                         let el = live[i];
-                        //console.log(el.createdAt.getFullYear() +' '+ el.createdAt.getMonth()+' '+el.createdAt.getDate())
-                        if(el.createdAt.getFullYear() == curr.getFullYear() &&el.createdAt.getMonth() == curr.getMonth() && el.createdAt.getDate() == i0){
+                        if(el.createdAt.getFullYear() == curr.getFullYear() &&el.createdAt.getMonth() == curr.getMonth() && el.createdAt.getDate() == curr.getDate()){
                             arr[j] += 1;
                             
                         }
@@ -111,5 +108,82 @@ module.exports = {
             return sR.sendResponse(res, 400, null, error);
         }
     },
+    getChart3: async (req, res) => {
+        try {
+
+            const { botId } = req.params;
+            let cus = await Customer.find({botId: botId});
+            let arr = [0,0,0,0,0,0,0]
+            let arrDate = getDayAvariable();
+            if(cus){
+                let j =0;
+                for (let i0 = 0; i0 < arrDate.length; i0++) {
+                    let curr = arrDate[i0];
+                    for (let i = 0; i < cus.length; i++) {
+                        let el = cus[i];
+                        if(el.createdAt.getFullYear() == curr.getFullYear() &&el.createdAt.getMonth() == curr.getMonth() && el.createdAt.getDate() == curr.getDate()){
+                            arr[j] += 1;
+                            
+                        }
+                    }
+                    j++;
+                }
+                
+            }
+
+            return sR.sendResponse(res, 200, arr.reverse(), message.getSuccess);
+
+
+        } catch (error) {
+
+            console.log('Error[Statistic:getChart3]: ' + error);
+            return sR.sendResponse(res, 400, null, error);
+        }
+    },
+    getChart4: async (req, res) => {
+        try {
+
+            const { botId } = req.params;
+            let sup = await SupportRequest.find({botId: botId});
+            let arr = [0,0,0,0,0,0,0]
+            let arrDate = getDayAvariable();
+            if(sup){
+                let j =0;
+                for (let i0 = 0; i0 < arrDate.length; i0++) {
+                    let curr = arrDate[i0];
+                    for (let i = 0; i < sup.length; i++) {
+                        let el = sup[i];
+                        if(el.createdAt.getFullYear() == curr.getFullYear() &&el.createdAt.getMonth() == curr.getMonth() && el.createdAt.getDate() == curr.getDate()){
+                            arr[j] += 1;
+                            
+                        }
+                    }
+                    j++;
+                }
+                
+            }
+
+            return sR.sendResponse(res, 200, arr.reverse(), message.getSuccess);
+
+
+        } catch (error) {
+
+            console.log('Error[Statistic:getChart4]: ' + error);
+            return sR.sendResponse(res, 400, null, error);
+        }
+    },
 
 }
+
+function getDayAvariable() {
+    
+    let arrDay = [null,null,null,null,null,null,null];
+    for (let i = 0; i < arrDay.length; i++) {
+      let el = arrDay[i];
+      let curr = new Date(); // get current date
+      curr.setDate(curr.getDate() -i);
+      arrDay[i] = (curr)
+      
+    }
+    return arrDay;
+  }

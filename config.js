@@ -6,5 +6,5 @@ module.exports = {
     version : '?v=20170307',
     // url:'mongodb://polo33333:12345678.c@ds135537.mlab.com:35537/ifood',
     default_image: "/images/default_image.png",
-    server_url: "https://chatbox.tpsoft.vn"
+    server_url: "http://chatbox.tpsoft.vn"
   };

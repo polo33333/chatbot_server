@@ -110,10 +110,17 @@ module.exports = {
 
             const { botId, blockId } = req.params;
             var obj = req.body;
-
+            let bloc_curr = await Block.findById(blockId);
             if (obj.name != undefined) {
-                let bloc_curr = await Block.findById(blockId);
                 bloc_curr.name = obj.name;
+                let bloc = await bloc_curr.save();
+                if (bloc)
+                    return sR.sendResponse(res, 200, bloc, message.updateSuccess);
+                return sR.sendResponse(res, 400, null, message.updateFail);
+            }
+
+            if (obj.isActive != undefined) {
+                bloc_curr.isActive = obj.isActive;
                 let bloc = await bloc_curr.save();
                 if (bloc)
                     return sR.sendResponse(res, 200, bloc, message.updateSuccess);

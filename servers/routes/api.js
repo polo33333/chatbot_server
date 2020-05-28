@@ -135,6 +135,8 @@ router.delete('/Ai/Bots/:botId/Notifications/:notificationId', Notification.remo
 router.get('/Ai/Bots/:botId/Statistics/getInfo', Statistic.getInfo);
 router.get('/Ai/Bots/:botId/Statistics/getChart1', Statistic.getChart1);
 router.get('/Ai/Bots/:botId/Statistics/getChart2', Statistic.getChart2);
+router.get('/Ai/Bots/:botId/Statistics/getChart3', Statistic.getChart3);
+router.get('/Ai/Bots/:botId/Statistics/getChart4', Statistic.getChart4);
 
 //BroadCast
 router.get('/Ai/Bots/:botId/BroadCast/getHistrory', BroadCast.getHistrory);
