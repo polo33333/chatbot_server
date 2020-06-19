@@ -9,6 +9,7 @@ var serviceSchema = new Schema({
     botId: String
 },
     {
+        versionKey: false,
         timestamps: true
     });
 

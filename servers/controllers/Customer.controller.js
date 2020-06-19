@@ -121,7 +121,7 @@ create_UserInFor = async function (botId, user) {
                     obj.gender = json.data.user_gender;
                     obj.phone = null;
                     obj.senderId = json.data.user_id;
-                    obj.platForm = "zalo";
+                    obj.channel = "zalo";
                     obj.isSupport = false;
                     obj.botId = botId;
                     await Customer.create(obj);

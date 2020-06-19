@@ -86,9 +86,14 @@ module.exports = {
                         await update_Card_Button(res, obj);
                     }
                     break;
-                case 'card_default_action':
+                case 'card_condition':
                     {
-                        await update_Card_Default_Action(res, obj);
+                        await update_Card_Condition(res, obj);
+                    }
+                    break;
+                case 'card_status':
+                    {
+                        await update_Card_Status(res, obj);
                     }
                     break;
                 default: {
@@ -126,7 +131,7 @@ module.exports = {
     }
 }
 
-update_Card_Info = async function (res, obj) {
+update_Card_Info = async (res, obj) => {
     try {
         let step = await Step.findById(obj._id);
         if (step) {
@@ -146,8 +151,7 @@ update_Card_Info = async function (res, obj) {
     }
 }
 
-
-update_Card_Item = async function (res, obj) {
+update_Card_Item = async (res, obj) => {
     try {
         var step = await Step.findById(obj._id);
         switch (obj.type) {
@@ -159,7 +163,7 @@ update_Card_Item = async function (res, obj) {
                         step.markModified('items');
                     }
                     else
-                        step.items.push({ content: obj.content, button: [], template_type: "text", type: "text-card" });
+                        step.items.push({ content: obj.content, button: [], template_type: "text" });
                     await step.save();
                     return sR.sendResponse(res, 200, null, message.updateSuccess);
 
@@ -168,10 +172,10 @@ update_Card_Item = async function (res, obj) {
             case 'form-card':
                 {
                     if (obj.action == 'add')
-                        step.items.push({ isRequireVariable: true, variable: null, validation: null, content: null, defaut_action: "", button: [], template_type: "text", type: "form-card" });
+                        step.items.push({ name: null, validation: null, content: null, button: [], template_type: "text" });
                     else if (obj.action == 'update') {
-                        if (obj.variable != undefined)
-                            step.items[obj.index].variable = obj.variable;
+                        if (obj.name != undefined)
+                            step.items[obj.index].name = obj.name;
                         if (obj.validation != undefined)
                             step.items[obj.index].validation = obj.validation;
                         if (obj.content != undefined)
@@ -189,7 +193,7 @@ update_Card_Item = async function (res, obj) {
             case 'info-card':
                 {
                     if (obj.action == 'add')
-                        step.items[0].elememts.push({ title: 'Tiêu đề', subtitle: null, image_url: config.default_image, default_action: null });
+                        step.items[0].elememts.push({ title: null, subtitle: null, image_url: config.default_image, button: [] });
                     else if (obj.action == 'update') {
                         if (obj.title != undefined)
                             step.items[0].elememts[obj.index].title = obj.title;
@@ -210,7 +214,7 @@ update_Card_Item = async function (res, obj) {
             case 'product-card':
                 {
                     if (obj.action == 'add')
-                        step.items[0].elememts.push({ title: 'Tiêu đề', subtitle: null, value: null, image_url: config.default_image, button: [] });
+                        step.items[0].elememts.push({ title: null, subtitle: null, value: null, image_url: config.default_image, button: [] });
                     else if (obj.action == 'update') {
                         if (obj.variable != undefined)
                             step.items[0].variable = obj.variable;
@@ -235,10 +239,10 @@ update_Card_Item = async function (res, obj) {
             case 'go-to-card':
                 {
                     if (step.items.length != 0) {
-                        step.items[0].blockName = obj.blockName;
+                        step.items[0].blockId = obj.blockId;
                         step.markModified('items');
                     } else
-                        step.items.push({ blockName: obj.blockName, button: [], template_type: "text", type: "goto-card" });
+                        step.items.push({ blockId: obj.blockId, button: [], template_type: "text" });
                     await step.save();
                     return sR.sendResponse(res, 200, null, message.updateSuccess);
                 }
@@ -258,15 +262,15 @@ update_Card_Item = async function (res, obj) {
             case 'memory-card':
                 {
                     if (obj.action == 'add')
-                        step.items[0].setVariables.push({ variable: null, value: null });
+                        step.items[0].setVariables.push({ name: null, value: null });
                     else if (obj.action == 'update') {
                         if (obj.isRemoveAll != undefined)
                             step.items[0].isRemoveAll = obj.isRemoveAll;
                         if (obj.removeVariables != undefined)
                             step.items[0].removeVariables = obj.removeVariables;
 
-                        if (obj.variable != undefined)
-                            step.items[0].setVariables[obj.index].variable = obj.variable;
+                        if (obj.name != undefined)
+                            step.items[0].setVariables[obj.index].name = obj.name;
                         if (obj.value != undefined)
                             step.items[0].setVariables[obj.index].value = obj.value;
 
@@ -331,6 +335,18 @@ update_Card_Item = async function (res, obj) {
                     await step.save();
                     return sR.sendResponse(res, 200, null, message.updateSuccess);
                 }
+            case 'survey-card':
+                {
+                    if (obj.content != undefined) {
+                        step.items[0].content = obj.content;
+                    }
+                    if (obj.surveyId != undefined) {
+                        step.items[0].surveyId = obj.surveyId;
+                    }
+                    step.markModified('items');
+                    await step.save();
+                    return sR.sendResponse(res, 200, null, message.updateSuccess);
+                }
             default:
                 return sR.sendResponse(res, 400, null, message.updateFail);
         }
@@ -340,29 +356,29 @@ update_Card_Item = async function (res, obj) {
     }
 }
 
-update_Card_Button = async function (res, obj) {
+update_Card_Button = async (res, obj) => {
     try {
 
         switch (obj.type) {
             case 'text-card':
                 {
-                    await text_Card_Button(res, obj);
+                    await card_Button(res, obj);
                 }
                 break;
             case 'info-card':
                 {
-                    await info_Card_Button(res, obj);
+                    await item_Card_Button(res, obj);
                 }
                 break;
             // break;
             case 'product-card':
                 {
-                    await product_Card_Button(res, obj);
+                    await item_Card_Button(res, obj);
                 }
                 break;
             case 'image-card':
                 {
-                    await image_Card_Button(res, obj);
+                    await card_Button(res, obj);
                 }
                 break;
 
@@ -375,19 +391,75 @@ update_Card_Button = async function (res, obj) {
     }
 }
 
-text_Card_Button = async function (res, obj) {
+update_Card_Condition = async (res, obj) => {
     try {
-        var step = await Step.findById(obj._id);
+        let step = await Step.findById(obj._id);
+        if (obj.action == 'add')
+            step.conditions.push({ name: null, math_type: 0, value: null });
+        else if (obj.action == 'update') {
+            if (obj.name != undefined)
+                step.conditions[obj.index].name = obj.name;
+            if (obj.math_type != undefined)
+                step.conditions[obj.index].math_type = obj.math_type;
+            if (obj.value != undefined)
+                step.conditions[obj.index].value = obj.value;
+        } else if (obj.action == 'delete') {
+            if (obj.index != undefined)
+                step.conditions.splice(obj.index, 1);
+        }
+
+        step.markModified('condition');
+        await step.save();
+        return sR.sendResponse(res, 200, step, message.updateSuccess);
+    } catch (error) {
+        console.log('Error[Step:update_Card_Condition]: ' + error);
+        return sR.sendResponse(res, 400, null, message.updateFail);
+    }
+
+}
+
+update_Card_Status = async (res, obj) => {
+    try {
+        let step = await Step.findById(obj._id);
+        step.isActive = !step.isActive;
+        await step.save();
+        return sR.sendResponse(res, 200, step, message.updateSuccess);
+    } catch (error) {
+        console.log('Error[Step:update_Card_Status]: ' + error);
+        return sR.sendResponse(res, 400, null, message.updateFail);
+    }
+}
+
+update_Card_Position = async (position, blockId) => {
+
+    let step_list = await Step.find({ blockId: blockId });
+    for (let i = 0; i < step_list.length; i++) {
+        let el = step_list[i];
+        for (let i1 = 0; i1 < position.length; i1++) {
+            let el1 = position[i1];
+            if (el._id == el1) {
+                el.position = i1;
+                break;
+            }
+        }
+        await el.save();
+    }
+    return;
+}
+
+card_Button = async (res, obj) => {
+    try {
+        let step = await Step.findById(obj._id);
         if (step.items[0].button.length <= 3) {
 
             switch (obj.button_type) {
                 case 'callback':
                     {
                         if (obj.action == 'add')
-                            step.items[0].button.push({ title: obj.title, type: "callback", redirectToBlock: obj.redirectToBlock, value: obj.value });
+                            step.items[0].button.push({ title: obj.title, type: "callback", redirectToBlock: obj.redirectToBlock, key: obj.key, value: obj.value });
                         else if (obj.action == 'update') {
                             step.items[0].button[obj.index] = {};
-                            step.items[0].button[obj.index] = { title: obj.title, type: "callback", redirectToBlock: obj.redirectToBlock, value: obj.value };
+                            step.items[0].button[obj.index] = { title: obj.title, type: "callback", redirectToBlock: obj.redirectToBlock, key: obj.key, value: obj.value };
                         } else if (obj.action == 'delete') {
                             step.items[0].button.splice(obj.index, 1);
                         }
@@ -433,75 +505,17 @@ text_Card_Button = async function (res, obj) {
     }
 }
 
-info_Card_Button = async function (res, obj) {
+item_Card_Button = async (res, obj) => {
     try {
-        var step = await Step.findById(obj._id);
-        if (step.items[0].button.length < 3) {
-
-            switch (obj.button_type) {
-                case 'callback':
-                    {
-                        if (obj.action == 'add')
-                            step.items[0].button.push({ title: obj.title, type: "callback", redirectToBlock: obj.redirectToBlock, value: obj.value });
-                        else if (obj.action == 'update') {
-                            step.items[0].button[obj.index] = {};
-                            step.items[0].button[obj.index] = { title: obj.title, type: "callback", redirectToBlock: obj.redirectToBlock, value: obj.value };
-                        } else if (obj.action == 'delete') {
-                            step.items[0].button.splice(obj.index, 1);
-                        }
-                    }
-                    break;
-                case 'url':
-                    {
-                        if (obj.action == 'add')
-                            step.items[0].button.push({ title: obj.title, type: "url", url: obj.url });
-                        else if (obj.action == 'update') {
-                            step.items[0].button[obj.index] = {};
-                            step.items[0].button[obj.index] = { title: obj.title, type: "url", url: obj.url };
-                        }
-                        else if (obj.action == 'delete') {
-                            step.items[0].button.splice(obj.index, 1);
-                        }
-                    }
-                    break;
-                case 'phone':
-                    {
-                        if (obj.action == 'add')
-                            step.items[0].button.push({ title: obj.title, type: "phone", phone: obj.phone });
-                        else if (obj.action == 'update') {
-                            step.items[0].button[obj.index] = {};
-                            step.items[0].button[obj.index] = { title: obj.title, type: "phone", phone: obj.phone };
-                        }
-                        else if (obj.action == 'delete') {
-                            step.items[0].button.splice(obj.index, 1);
-                        }
-                    }
-                    break;
-
-                default:
-                    break;
-            }
-            step.markModified('items');
-            await step.save();
-        }
-        return sR.sendResponse(res, 200, null, message.updateSuccess);
-    } catch (error) {
-        console.log('Error[Step:info_Card_Button]: ' + error);
-        return sR.sendResponse(res, 400, null, message.updateFail);
-    }
-}
-
-product_Card_Button = async function (res, obj) {
-    try {
-        var step = await Step.findById(obj._id);
+        let step = await Step.findById(obj._id);
         switch (obj.button_type) {
             case 'callback':
                 {
                     if (obj.action == 'add')
-                        step.items[0].elememts[obj.index].button.push({ title: obj.title, type: "callback", redirectToBlock: obj.redirectToBlock, value: obj.value });
+                        step.items[0].elememts[obj.index].button.push({ title: obj.title, type: "callback", redirectToBlock: obj.redirectToBlock, key: obj.key, value: obj.value });
                     else if (obj.action == 'update') {
                         step.items[0].elememts[obj.index].button[obj.index2] = {};
-                        step.items[0].elememts[obj.index].button[obj.index2] = { title: obj.title, type: "callback", redirectToBlock: obj.redirectToBlock, value: obj.value };
+                        step.items[0].elememts[obj.index].button[obj.index2] = { title: obj.title, type: "callback", redirectToBlock: obj.redirectToBlock, key: obj.key, value: obj.value };
                     } else if (obj.action == 'delete') {
                         step.items[0].elememts[obj.index].button.splice(obj.index2, 1);
                     }
@@ -545,124 +559,4 @@ product_Card_Button = async function (res, obj) {
         console.log('Error[Step:product_Card_Button]: ' + error);
         return sR.sendResponse(res, 400, null, message.updateFail);
     }
-}
-
-
-update_Card_Default_Action = async function (res, obj) {
-    try {
-        var step = await Step.findById(obj._id);
-        switch (obj.type) {
-            case 'info-card':
-                {
-
-
-                    if (obj.action == 'delete') {
-                        if (obj.index != undefined)
-                            step.items[0].elememts[obj.index].default_action = null;
-                    }
-                    else {
-                        step.items[0].elememts[obj.index].default_action = {};
-
-                        if (obj.title != undefined)
-                            step.items[0].elememts[obj.index].default_action.title = obj.title;
-                        if (obj.button_type != undefined)
-                            step.items[0].elememts[obj.index].default_action.type = obj.button_type;
-                        if (obj.redirectToBlock != undefined)
-                            step.items[0].elememts[obj.index].default_action.redirectToBlock = obj.redirectToBlock;
-                        if (obj.value != undefined)
-                            step.items[0].elememts[obj.index].default_action.value = obj.value;
-                        if (obj.url != undefined)
-                            step.items[0].elememts[obj.index].default_action.url = obj.url;
-                        if (obj.phone != undefined)
-                            step.items[0].elememts[obj.index].default_action.phone = obj.phone;
-
-                    }
-                    step.markModified('items');
-                    await step.save();
-                    return sR.sendResponse(res, 200, null, message.updateSuccess);
-                }
-            // break;
-            default:
-                return sR.sendResponse(res, 400, null, message.updateFail);
-        }
-    } catch (error) {
-        console.log('Error[Step:update_Card_Item]: ' + error);
-        return sR.sendResponse(res, 400, null, message.updateFail);
-    }
-}
-
-image_Card_Button = async function (res, obj) {
-    try {
-        var step = await Step.findById(obj._id);
-        switch (obj.button_type) {
-            case 'callback':
-                {
-
-                    if (obj.action == 'add')
-                        step.items[0].button.push({ title: obj.title, type: "callback", redirectToBlock: obj.redirectToBlock, value: obj.value });
-                    else if (obj.action == 'update') {
-                        step.items[0].button[obj.index] = {};
-                        step.items[0].button[obj.index] = { title: obj.title, type: "callback", redirectToBlock: obj.redirectToBlock, value: obj.value };
-                    } else if (obj.action == 'delete') {
-                        step.items[0].button.splice(obj.index, 1);
-                    }
-                }
-                break;
-            case 'url':
-                {
-                    if (obj.action == 'add')
-                        step.items[0].button.push({ title: obj.title, type: "url", url: obj.url });
-                    else if (obj.action == 'update') {
-                        step.items[0].button[obj.index] = {};
-                        step.items[0].button[obj.index] = { title: obj.title, type: "url", url: obj.url };
-                    }
-                    else if (obj.action == 'delete') {
-                        step.items[0].button.splice(obj.index, 1);
-                    }
-                }
-                break;
-            case 'phone':
-                {
-                    if (obj.action == 'add')
-                        step.items[0].button.push({ title: obj.title, type: "phone", phone: obj.phone });
-                    else if (obj.action == 'update') {
-                        step.items[0].button[obj.index] = {};
-                        step.items[0].button[obj.index] = { title: obj.title, type: "phone", phone: obj.phone };
-                    }
-                    else if (obj.action == 'delete') {
-                        step.items[0].button.splice(obj.index, 1);
-                    }
-                }
-                break;
-
-            default:
-                break;
-        }
-        step.markModified('items');
-        await step.save();
-
-        return sR.sendResponse(res, 200, null, message.updateSuccess);
-    } catch (error) {
-        console.log('Error[Step:image_Card_Button]: ' + error);
-        return sR.sendResponse(res, 400, null, message.updateFail);
-    }
-}
-
-update_Card_Position = async function (position, blockId) {
-
-    let step_list = await Step.find({ blockId: blockId });
-
-
-    for (let i = 0; i < step_list.length; i++) {
-        let el = step_list[i];
-        for (let i1 = 0; i1 < position.length; i1++) {
-            let el1 = position[i1];
-            if (el._id == el1) {
-                el.position = i1;
-                break;
-            }
-        }
-        await el.save();
-    }
-    return;
 }

@@ -3,6 +3,7 @@ const sR = require('../functions/M_SendResponse.function');
 const message = require('../functions/C_String.function');
 const fetch = require('node-fetch');
 const config = require('../../config');
+const P_WitFunction = require('../functions/P_Wit.function');
 
 
 module.exports = {
@@ -12,18 +13,12 @@ module.exports = {
     create: async (req, res) => {
         try {
 
-            const { botId, entityId } = req.params;
-            var obj = req.body;
-            const ent = await Entity.findById(entityId);
+            let { botId, entityId } = req.params;
+            let obj = req.body;
+            let ent = await Entity.findById(entityId);
             if (ent) {
-                const resWit = await fetch('https://api.wit.ai/entities/' + ent.name + '/values/' + encodeURI(obj.value) + config.version, {
-                    method: "POST",
-                    headers: { Authorization: config.auth + botId },
-                    body: JSON.stringify({
-                        expression: obj.expression,
-                    })
-                });
-                const json = await resWit.json();
+
+                let json = await P_WitFunction.createSynonym(ent.name, obj.keyword, obj.synonym, botId);
                 if (json.error == undefined) {
                     return sR.sendResponse(res, 200, json, message.createSuccess);
                 }
@@ -40,17 +35,11 @@ module.exports = {
     // remove  Synonyms of entity
     remove: async (req, res) => {
         try {
-
-
-            const { botId, entityId } = req.params;
-            var obj = req.body;
-            const ent = await Entity.findById(entityId);
+            let { botId, entityId } = req.params;
+            let obj = req.body;
+            let ent = await Entity.findById(entityId);
             if (ent) {
-                const resWit = await fetch('https://api.wit.ai/entities/' + ent.name + '/values/' + encodeURI(obj.value) + '/expressions/' + encodeURI(obj.expression) + config.version, {
-                    method: "DELETE",
-                    headers: { Authorization: 'Bearer ' + botId }
-                });
-                const json = await resWit.json();
+                let json = await P_WitFunction.deleteSynonym(ent.name, obj.keyword, obj.synonym, botId)
                 if (json.error == undefined) {
 
                     return sR.sendResponse(res, 200, null, message.deleteSuccess);

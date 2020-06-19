@@ -37,6 +37,7 @@ exports.update = async function (req, res) {
         currentConfig.reminder_content = object.reminder_content;
         currentConfig.reminder_timeout = object.reminder_timeout;
         currentConfig.isSuggest = object.isSuggest;
+        currentConfig.confidence = object.confidence;
         currentConfig.isActive = object.isActive;
         currentConfig.isFacebook = object.isFacebook;
         currentConfig.isZalo = object.isZalo;

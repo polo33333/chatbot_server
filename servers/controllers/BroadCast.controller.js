@@ -1,11 +1,10 @@
 
-const Article = require('../models/Article.model');
 const BroadCast = require('../models/BroadCast.model');
 const Config = require('../models/Config.model');
 const sR = require('../functions/M_SendResponse.function');
 const message = require('../functions/C_String.function');
-const fetch = require('node-fetch');
-const conf = require('../../config');
+// const fetch = require('node-fetch');
+// const conf = require('../../config');
 const M_BroadCast_handling = require('../functions/M_BroadCast_handling.function');
 const zalo = 'zalo';
 const face = 'facebook';
@@ -49,7 +48,7 @@ module.exports = {
             const con = await Config.findOne({ botId: botId });
             var obj = req.body;
             if (!obj.isSchedule) {
-                switch (obj.platForm) {
+                switch (obj.channel) {
                     case zalo:
                         {
                             await M_BroadCast_handling.handleZaloBroadCast(obj.blockId, botId);

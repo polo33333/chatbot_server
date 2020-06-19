@@ -13,7 +13,7 @@ var serviceSchema = new Schema(
         name: String,
         blockId: String,
         isSchedule: { type: Boolean, default: false },
-        platForm: { type: String, default: 'ALL'}, // facebook;zalo
+        channel: { type: String, default: 'ALL'}, // facebook;zalo
         botId: String
     },
     {

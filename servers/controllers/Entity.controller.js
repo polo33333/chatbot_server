@@ -1,6 +1,7 @@
 const Entity = require('../models/Entity.model');
 const sR = require('../functions/M_SendResponse.function');
 const message = require('../functions/C_String.function');
+const P_Wit = require('../functions/P_Wit.function');
 const fetch = require('node-fetch');
 const config = require('../../config');
 
@@ -11,8 +12,8 @@ module.exports = {
     getAll: async (req, res) => {
         try {
 
-            const { botId } = req.params;
-            const result = await Entity.find({ botId: botId });
+            let { botId } = req.params;
+            let result = await Entity.find({ botId: botId, isActive: true, isEntity: true });
             return sR.sendResponse(res, 200, result, message.getSuccess);
 
         } catch (error) {
@@ -22,25 +23,80 @@ module.exports = {
         }
     },
 
+
+    // test
+    getEntities: async (req, res) => {
+        try {
+            let { botId } = req.params;
+            let { isActive, isEntity } = req.query;
+            let result = null;
+            if (isEntity == undefined) {
+                result = await Entity.find({ botId: botId, isActive: isActive });
+            } else if (isActive == undefined) {
+                result = await Entity.find({ botId: botId, isEntity: isEntity });
+            } else {
+                result = await Entity.find({ botId: botId, isActive: isActive, isEntity: isEntity });
+            }
+
+            if (result) {
+                return sR.sendResponse(res, 200, result, message.getSuccess);
+            }
+            return sR.sendResponse(res, 400, null, message.getFail);
+        } catch (error) {
+            console.log('Error[Entity:getEntities]: ' + error);
+            return sR.sendResponse(res, 400, null, error);
+        }
+    },
+
+
+
+    // get variables with botId
+    // getVariables: async (req, res) => {
+    //     try {
+
+    //         let { botId } = req.params;
+    //         let result = await Entity.find({ botId: botId, isActive: true });
+    //         return sR.sendResponse(res, 200, result, message.getSuccess);
+
+    //     } catch (error) {
+
+    //         console.log('Error[Entity:getVariables]: ' + error);
+    //         return sR.sendResponse(res, 400, null, error);
+    //     }
+    // },
+
     // get by id
     getById: async (req, res) => {
         try {
 
-            const { botId, entityId } = req.params;
-            const result = await Entity.findById(entityId);
+            let { botId, entityId } = req.params;
+            let result = await Entity.findById(entityId);
             if (result) {
-                const resWit = await fetch('https://api.wit.ai/entities/' + result.name + config.version, {
-                    method: "GET",
-                    headers: { Authorization: config.auth + botId },
-                });
-                const json = await resWit.json();
-                return sR.sendResponse(res, 200, json, message.getSuccess);
+                return sR.sendResponse(res, 200, result, message.getSuccess);
             }
 
             return sR.sendResponse(res, 200, null, message.getFail);
         } catch (error) {
 
             console.log('Error[Entity:getById]: ' + error);
+            return sR.sendResponse(res, 400, null, error);
+        }
+    },
+
+    getInfo: async (req, res) => {
+        try {
+
+            let { botId, entityId } = req.params;
+            let ent = await Entity.findById(entityId);
+            if (ent) {
+                let json = await P_Wit.getEntity(ent.name, botId);
+                return sR.sendResponse(res, 200, json, message.getSuccess);
+            }
+
+            return sR.sendResponse(res, 400, null, message.getFail);
+        } catch (error) {
+
+            console.log('Error[Entity:getInfo]: ' + error);
             return sR.sendResponse(res, 400, null, error);
         }
     },
@@ -66,22 +122,18 @@ module.exports = {
 
         try {
 
-            const { botId } = req.params;
-            var obj = req.body;
+            let { botId } = req.params;
+            let obj = req.body;
             obj.botId = botId;
+            obj.roles = obj.name;
+            let temp = obj.lookups;
+            obj.lookups = obj.lookups == 3 ? ['free-text', 'keywords'] : obj.lookups == 1 ? ['keywords'] : ['free-text'];
+            let json = await P_Wit.createEntity(obj, botId);
+            obj.lookups = temp;
 
-            const resWit = await fetch('https://api.wit.ai/entities' + config.version, {
-                method: "POST",
-                headers: { Authorization: config.auth + botId },
-                body: JSON.stringify({
-                    id: obj.name,
-                    lookups: ["keywords"]
-                })
-            });
-            const json = await resWit.json();
             if (json.error == undefined) {
-                let entity = await Entity.create(obj);
-                return sR.sendResponse(res, 200, entity, message.createSuccess);
+                let ent = await Entity.create(obj);
+                return sR.sendResponse(res, 200, ent, message.createSuccess);
             }
 
             return sR.sendResponse(res, 400, null, message.createFail);
@@ -98,42 +150,28 @@ module.exports = {
         try {
 
             const { botId, entityId } = req.params;
-            var obj = req.body;
-            var ent = await Entity.findById(entityId);
-            var ojw = {};
-            var entityName = ent.name;
+            let obj = req.body;
+            let ent = await Entity.findById(entityId);
+            let entityName = ent.name;
+            let ojw = {};
+
             if (obj.name != undefined) {
-                ojw.id = obj.name;
+                ojw.name = obj.name;
+                ojw.roles = [obj.name];
                 ent.name = obj.name;
-            }
-            if (obj.doc != undefined) {
-                ojw.doc = obj.doc;
-                ent.desc = obj.doc;
+                ent.roles = obj.name;
+            } else {
+                ojw.name = ent.name;
+                ojw.roles = [ent.name];
             }
             if (obj.lookups != undefined) {
-                switch(obj.lookups) {
-                    case 'free-text':
-                        ojw.lookups = [obj.lookups]
-                      break;
-                    case 'keywords':
-                        ojw.lookups = [obj.lookups]
-                      break;
-                    default:
-                        ojw.lookups = ["free-text", "keywords"]
-                  }
-                
+                ojw.lookups = obj.lookups == '3' ? ['free-text', 'keywords'] : obj.lookups == '1' ? ['keywords'] : ['free-text'];
+                ent.lookups = Number(obj.lookups);
             }
 
-            const resWit = await fetch('https://api.wit.ai/entities/' + entityName + config.version, {
-                method: "PUT",
-                headers: { Authorization: config.auth + botId },
-                body: JSON.stringify(ojw)
-
-            });
-            const json = await resWit.json();
-
+            let json = await P_Wit.updateEntity(entityName, ojw, botId);
             if (json.error == undefined) {
-                let entity = await Entity.updateOne({ _id: ent._id }, ent);
+                let entity = await ent.save();
                 return sR.sendResponse(res, 200, entity, message.createSuccess);
             }
 
@@ -151,22 +189,16 @@ module.exports = {
         try {
 
 
-            const { botId, entityId } = req.params;
-            const currEntity = await Entity.findByIdAndDelete(entityId);
-            if (currEntity) {
-                const resWit = await fetch('https://api.wit.ai/entities/' + currEntity.name + config.version, {
-                    method: "DELETE",
-                    headers: { Authorization: 'Bearer ' + botId }
-                });
-                const json = await resWit.json();
-
-                if (json.success == true || json.code != 'bad-request') {
-
-                    return sR.sendResponse(res, 200, null, message.deleteSuccess);
+            let { botId, entityId } = req.params;
+            let curr = await Entity.findById(entityId);
+            if (curr) {
+                let json = await P_Wit.deleteEntity(curr.name, botId);
+                if (json) {
+                    let ent = await Entity.findByIdAndDelete(entityId);
+                    return sR.sendResponse(res, 200, ent, message.deleteSuccess);
                 }
-                else {
-                    return sR.sendResponse(res, 400, null, message.deleteFail);
-                }
+
+                return sR.sendResponse(res, 400, null, message.deleteFail);
             }
             return sR.sendResponse(res, 200, null, null);
         } catch (error) {

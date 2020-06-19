@@ -4,7 +4,7 @@ var Schema = mongoose.Schema;
 var serviceSchema = new Schema({
     name: String,
     type: String,
-    condition: [Object],
+    conditions: [Object],
     items : [Object],
     isActive: { type: Boolean, default: true },
     blockId: String,

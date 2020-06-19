@@ -3,8 +3,10 @@ module.exports = {
     url : 'mongodb://localhost:27017/chatbot',
     access_token : 'A3UUASVNN7RW762U5MEYATEZ7YP5OYB3',
     auth : 'Bearer ',
-    version : '?v=20170307',
+    version : '?v=20200611',
     // url:'mongodb://polo33333:12345678.c@ds135537.mlab.com:35537/ifood',
     default_image: "/images/default_image.png",
-    server_url: "http://chatbox.tpsoft.vn"
+    suggest_image: "/images/default_image.png",
+    suggest_content: "Ý định của bạn là?",
+    server_url: "https://c0c43625b65c.ngrok.io"
   };

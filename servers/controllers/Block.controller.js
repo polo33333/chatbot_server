@@ -11,8 +11,8 @@ module.exports = {
     getAll: async (req, res) => {
         try {
 
-            const { botId } = req.params;
-            const bloc = await Block.find({ botId: botId, isParent: false });
+            let { botId } = req.params;
+            let bloc = await Block.find({ botId: botId, isParent: false });
             return sR.sendResponse(res, 200, bloc, message.getSuccess);
 
         } catch (error) {
@@ -27,7 +27,7 @@ module.exports = {
     getMenu: async (req, res) => {
         try {
 
-            const { botId } = req.params;
+            let { botId } = req.params;
             let parent = await Block.find({ botId: botId, isParent: true }).sort({ position: 1 });
             let menu = [];
             for (let i = 0; i < parent.length; i++) {
@@ -45,12 +45,44 @@ module.exports = {
             return sR.sendResponse(res, 400, null, error);
         }
     },
+
+    // get menu with botId
+    getIntentInvalid: async (req, res) => {
+        try {
+
+            let { botId } = req.params;
+            let intent = await Intent.find({ botId: botId });
+            let parent = await Block.find({ botId: botId, isParent: false })
+            let menu = [];
+            for (let i = 0; i < intent.length; i++) {
+                let el = intent[i];
+                let count = 0;
+                for (let i2 = 0; i2 < parent.length; i2++) {
+                    let el2 = parent[i2];
+                    if (el.name == el2.intentName) {
+                        count = 0;
+                        break;
+                    } else {
+                        count++;
+                    }
+                }
+                if (count > 0)
+                    menu.push(el);
+            }
+            return sR.sendResponse(res, 200, menu, message.getSuccess);
+
+        } catch (error) {
+
+            console.log('Error[Block:getIntentInvalid]: ' + error);
+            return sR.sendResponse(res, 400, null, error);
+        }
+    },
     // get defaut with botId
     getDefaut: async (req, res) => {
         try {
 
-            const { botId } = req.params;
-            let bloc = await Block.findOne({ isDefaut: true });
+            let { botId } = req.params;
+            let bloc = await Block.findOne({ isDefaut: true, botId: botId });
             return sR.sendResponse(res, 200, bloc, message.getSuccess);
 
         } catch (error) {
@@ -64,7 +96,7 @@ module.exports = {
     // get by id
     getById: async (req, res) => {
         try {
-            const { blockId } = req.params;
+            let { blockId } = req.params;
             let bloc = await Block.findById(blockId);
             if (bloc)
                 return sR.sendResponse(res, 200, bloc, message.getSuccess);
@@ -82,8 +114,8 @@ module.exports = {
 
         try {
 
-            const { botId } = req.params;
-            var obj = req.body;
+            let { botId } = req.params;
+            let obj = req.body;
             obj.botId = botId;
             if (obj.isParent) {
                 let parent = await Block.find({ botId: botId, isParent: true });
@@ -93,7 +125,7 @@ module.exports = {
                 }
 
             }
-            const bloc = await Block.create(obj);
+            let bloc = await Block.create(obj);
             if (bloc)
                 return sR.sendResponse(res, 200, bloc, message.createSuccess);
             return sR.sendResponse(res, 400, null, message.createFail);
@@ -108,26 +140,28 @@ module.exports = {
     update: async (req, res) => {
         try {
 
-            const { botId, blockId } = req.params;
-            var obj = req.body;
-            let bloc_curr = await Block.findById(blockId);
-            if (obj.name != undefined) {
-                bloc_curr.name = obj.name;
-                let bloc = await bloc_curr.save();
-                if (bloc)
-                    return sR.sendResponse(res, 200, bloc, message.updateSuccess);
-                return sR.sendResponse(res, 400, null, message.updateFail);
-            }
+            let { botId, blockId } = req.params;
+            let obj = req.body;
+            if (blockId != 'null') {
+                let bloc_curr = await Block.findById(blockId);
+                if (obj.name != undefined) {
+                    bloc_curr.name = obj.name;
+                    let bloc = await bloc_curr.save();
+                    if (bloc)
+                        return sR.sendResponse(res, 200, bloc, message.updateSuccess);
+                    return sR.sendResponse(res, 400, null, message.updateFail);
+                }
 
-            if (obj.isActive != undefined) {
-                bloc_curr.isActive = obj.isActive;
-                let bloc = await bloc_curr.save();
-                if (bloc)
-                    return sR.sendResponse(res, 200, bloc, message.updateSuccess);
-                return sR.sendResponse(res, 400, null, message.updateFail);
+                if (obj.isActive != undefined) {
+                    bloc_curr.isActive = obj.isActive;
+                    let bloc = await bloc_curr.save();
+                    if (bloc)
+                        return sR.sendResponse(res, 200, bloc, message.updateSuccess);
+                    return sR.sendResponse(res, 400, null, message.updateFail);
+                }
             }
-
             if (obj.position != undefined) {
+
                 let block_list = await Block.find({ botId: botId, isParent: true });
                 for (let i = 0; i < block_list.length; i++) {
                     let el = block_list[i];
@@ -155,8 +189,8 @@ module.exports = {
     remove: async (req, res) => {
         try {
 
-            const { blockId } = req.params;
-            const bloc = await Block.findByIdAndRemove(blockId);
+            let { blockId } = req.params;
+            let bloc = await Block.findByIdAndRemove(blockId);
             if (bloc) {
                 return sR.sendResponse(res, 200, null, message.deleteSuccess);
             }

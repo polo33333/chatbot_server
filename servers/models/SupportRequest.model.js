@@ -9,7 +9,7 @@ var serviceSchema = new Schema(
         phone: { type: String, default: ''},
         items: [],
         gender: Number,
-        platForm: String,
+        channel: String,
         botId: String,
     },
     {

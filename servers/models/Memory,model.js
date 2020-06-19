@@ -4,9 +4,9 @@ var Schema = mongoose.Schema;
 var serviceSchema = new Schema(
     {
         senderId: String,
-        platForm: String,
+        channel: String,
         variables: [
-            { entityName: String, value: String }
+            { name: String, value: String }
         ],
         works: [
             Object

@@ -7,7 +7,7 @@ var serviceSchema = new Schema(
         name: String,
         phone: { type: String, default: null },
         gender: Number,
-        platForm: String,
+        channel: String,
         isSupport: { type: Boolean, default: false },
         botId: String,
     },

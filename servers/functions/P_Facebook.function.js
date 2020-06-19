@@ -1,14 +1,14 @@
-
-
 var Config = require('../models/Config.model');
 var sR = require('../functions/M_SendResponse.function');
 var message = require('../functions/C_String.function');
 const request = require('request');
 const Core = require('../functions/M_Core.function');
+const M_Message_handling = require('./M_Message_handling.function');
 const config = require('../../config');
 const face = 'facebook';
 
-exports.webhookVerify = async function (req, res) {
+
+exports.webhookVerify = async (req, res) => {
 
     // Your verify token. Should be a random string.
     var currConfig = await Config.findOne({ botId: req.params.botId });
@@ -32,9 +32,10 @@ exports.webhookVerify = async function (req, res) {
             res.sendStatus(403);
         }
     }
-}
+};
+
 // get script by botid method
-exports.webhook = async function (req, res) {
+exports.webhook = async (req, res) => {
     try {
         // Parse the request body from the POST
         var body = req.body;
@@ -74,25 +75,10 @@ exports.webhook = async function (req, res) {
     } catch (error) {
         console.log(error);
     }
-}
-
-
-// Handles messages events
-async function handleMessage(botId, PAGE_ACCESS_TOKEN, sender_psid, received_message) {
-    // Check if the message contains text
-    if (received_message.text) {
-        if (received_message.is_echo == undefined)
-            await Core.handleMessage(sender_psid, received_message.text, face, PAGE_ACCESS_TOKEN, botId);
-    }
-}
-
-// Handles messaging_postbacks events
-async function handlePostback(botId, PAGE_ACCESS_TOKEN, sender_psid, received_postback) {
-    await Core.handlePostback(sender_psid, received_postback.payload, face, PAGE_ACCESS_TOKEN, botId);
-}
+};
 
 // Sends response messages via the Send API
-exports.sendMessage = async function (senderId, temp_message, PAGE_ACCESS_TOKEN) {
+exports.sendMessage = async (senderId, temp_message, PAGE_ACCESS_TOKEN, botId) => {
     // Construct the message body
     var sendObject = null;
     switch (temp_message.template_type) {
@@ -114,6 +100,8 @@ exports.sendMessage = async function (senderId, temp_message, PAGE_ACCESS_TOKEN)
         default:
             break;
     }
+
+    await M_Message_handling.handleLiveChat(temp_message, senderId, false, temp_message.template_type, botId);
     face_typing("typing_on", senderId, PAGE_ACCESS_TOKEN);
     await new Promise(resolve => setTimeout(resolve, 1000));
     face_typing("typing_off", senderId, PAGE_ACCESS_TOKEN);
@@ -126,7 +114,7 @@ exports.sendMessage = async function (senderId, temp_message, PAGE_ACCESS_TOKEN)
         "json": sendObject
     }, (err, res, body) => {
         if (!err) {
-            //console.log('message sent!')
+            //
         } else {
             console.error("Unable to send message:" + err);
         }
@@ -135,11 +123,38 @@ exports.sendMessage = async function (senderId, temp_message, PAGE_ACCESS_TOKEN)
 
 
     return;
+};
+
+
+
+
+// Handles messages events
+handleMessage = async (botId, PAGE_ACCESS_TOKEN, sender_psid, received_message) => {
+    // Check if the message contains text
+    if (received_message.text) {
+        if (received_message.is_echo == undefined) {
+            await M_Message_handling.handleCustomer(sender_psid, face, PAGE_ACCESS_TOKEN, botId);
+            let isActive = await M_Message_handling.handleSupport(sender_psid, botId);
+            await M_Message_handling.handleLiveChat(received_message.text, sender_psid, true, 'text', botId);
+            if (isActive)
+                await Core.handleText(sender_psid, received_message.text, face, PAGE_ACCESS_TOKEN, botId);
+
+        }
+
+    }
+}
+
+// Handles messaging_postbacks events
+handlePostback = async (botId, PAGE_ACCESS_TOKEN, sender_psid, received_postback) => {
+    await M_Message_handling.handleCustomer(sender_psid, face, PAGE_ACCESS_TOKEN, botId);
+    await M_Message_handling.handleLiveChat(received_postback.payload, sender_psid, true, 'btn', botId);
+    let isActive = await M_Message_handling.handleSupport(sender_psid, botId);
+    if (isActive)
+        await Core.handlePostback(sender_psid, received_postback.payload, face, PAGE_ACCESS_TOKEN, botId);
 }
 
 
-
-face_text_template = function (senderId, temp_message) {
+face_text_template = (senderId, temp_message) => {
     if (temp_message.button.length == 0) {
         let sendObject = {
             recipient: {
@@ -162,7 +177,7 @@ face_text_template = function (senderId, temp_message) {
                     type: "template",
                     payload: {
                         template_type: "button",
-                        text: "",
+                        text: null,
                         buttons: [
                         ]
                     }
@@ -178,7 +193,7 @@ face_text_template = function (senderId, temp_message) {
 
 }
 
-face_list_template = function (senderId, temp_message) {
+face_list_template = (senderId, temp_message) => {
     let sendObject = {
         recipient: {
             id: "",
@@ -200,8 +215,7 @@ face_list_template = function (senderId, temp_message) {
 
 }
 
-
-face_list_product_template = function (senderId, temp_message) {
+face_list_product_template = (senderId, temp_message) => {
     let sendObject = {
         recipient: {
             id: "",
@@ -223,7 +237,7 @@ face_list_product_template = function (senderId, temp_message) {
 
 }
 
-face_media_template = function (senderId, button) {
+face_media_template = (senderId, temp_message) => {
     let sendObject = {
         recipient: {
             id: "",
@@ -233,9 +247,10 @@ face_media_template = function (senderId, button) {
                 type: "template",
                 payload: {
                     template_type: "generic",
-                    elements: [{
-                        image_url: "",
-                    }
+                    elements: [
+                        {
+                            image_url: "",
+                        }
                     ],
                 }
             }
@@ -250,7 +265,7 @@ face_media_template = function (senderId, button) {
 
 }
 
-face_add_button = function (button) {
+face_add_button = (button) => {
     try {
 
         let buttons = [];
@@ -277,7 +292,7 @@ face_add_button = function (button) {
                             type: "phone_number"
                         };
                         elbtn.title = button[ibtn].title;
-                        elbtn.payload = button[ibtn].phone;
+                        elbtn.payload = '+84' + button[ibtn].phone;
                         buttons.push(elbtn);
 
                     }
@@ -296,7 +311,8 @@ face_add_button = function (button) {
                             button[ibtn].value = null;
                         let payData = {
                             redirectToBlock: button[ibtn].redirectToBlock,
-                            value: button[ibtn].value
+                            key: button[ibtn].key,
+                            value: button[ibtn].value,
                         }
                         elbtn.payload = JSON.stringify(payData);
                         buttons.push(elbtn);
@@ -316,79 +332,7 @@ face_add_button = function (button) {
 
 }
 
-face_add_default_action = function (action) {
-    try {
-        if (action) {
-            switch (action.type) {
-                case "url":
-                    {
-                        let el = {
-                            url: "",
-                            type: "web_url"
-                        };
-                        el.url = action.url;
-                        return el;
-                    }
-                case "phone":
-                    {
-                        let el = {
-                            payload: "",
-                            type: "phone_number"
-                        };
-                        el.payload = action.phone;
-
-                        return el;
-                    }
-                case "callback":
-                    {
-                        let el = {
-                            payload: "",
-                            type: "postback"
-                        };
-
-                        if (action.value == undefined || action.value == '')
-                            action.value = null;
-                        let payData = {
-                            redirectToBlock: action.redirectToBlock == undefined ? null : action.redirectToBlock,
-                            value: action.value
-                        }
-                        el.payload = JSON.stringify(payData);
-                        return el;
-                    }
-
-                default:
-                    break;
-            }
-        }
-    } catch (error) {
-        console.log('Error[Facebook:adddefautaction]: ' + error);
-        return [];
-    }
-
-}
-
-face_add_element = function (elememts) {
-    try {
-        let items = [];
-        for (let it = 0; it < elememts.length; it++) {
-            let elit = {
-            };
-
-            elit.title = elememts[it].title;
-            elit.subtitle = elememts[it].subtitle == null ? '' : elememts[it].subtitle;
-            elit.image_url = config.server_url + elememts[it].image_url;
-            if (elememts[it].default_action != null)
-                elit.buttons = face_add_button([elememts[it].default_action]);
-            items.push(elit);
-        }
-        return items;
-    } catch (error) {
-        console.log('Error[Facebook:addElement]: ' + error);
-        return [];
-    }
-
-}
-face_add_element_product = function (elememts) {
+face_add_element_product = (elememts) => {
     try {
 
         let items = [];
@@ -401,7 +345,6 @@ face_add_element_product = function (elememts) {
             elit.image_url = config.server_url + elememts[it].image_url;
             if (elememts[it].button.length > 0)
                 elit.buttons = face_add_button(elememts[it].button);
-            console.log(elit.buttons)
             items.push(elit);
         }
 
@@ -413,18 +356,29 @@ face_add_element_product = function (elememts) {
 
 }
 
-
-face_quick_replies = function () {
+face_add_element = (elememts) => {
     try {
+        let items = [];
+        for (let it = 0; it < elememts.length; it++) {
+            let elit = {
+            };
 
+            elit.title = elememts[it].title;
+            elit.subtitle = elememts[it].subtitle == null ? '' : elememts[it].subtitle;
+            elit.image_url = config.server_url + elememts[it].image_url;
+            if (elememts[it].button.length > 0)
+                elit.buttons = face_add_button(elememts[it].button);
+            items.push(elit);
+        }
+        return items;
     } catch (error) {
-        console.log('Error[FaceBook:face_quick_replies]: ' + error);
-        return;
+        console.log('Error[Facebook:addElement]: ' + error);
+        return [];
     }
 
 }
 
-face_typing = function (typing, senderId, PAGE_ACCESS_TOKEN) {
+face_typing = (typing, senderId, PAGE_ACCESS_TOKEN) => {
     try {
         let sendObject = {
             recipient: {
@@ -450,4 +404,14 @@ face_typing = function (typing, senderId, PAGE_ACCESS_TOKEN) {
         console.log('Error[FaceBook:face_typing]: ' + error);
         return null;
     }
+}
+// comming soon
+face_quick_replies = () => {
+    try {
+
+    } catch (error) {
+        console.log('Error[FaceBook:face_quick_replies]: ' + error);
+        return;
+    }
+
 }

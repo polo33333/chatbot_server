@@ -3,13 +3,17 @@ var Schema = mongoose.Schema;
 
 var serviceSchema = new Schema({
     name: String,
-    desc: { type: String, default: 'User-defined entity' },
+    roles: String,
+    type: { type: String, default: 'String'}, // String, Boolean, Number
+    desc: { type: String, default: 'Thực thể người dùng tự định nghĩa.' },
     lookups: { type: Number, default: 1 },  // 1: lookups = keyword; 2: lookups = freetext; 3: lookups = keyword & freetext
-    intents: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Intent' }],
+    isEntity: { type: Boolean, default: true },
+    isSystem: { type: Boolean, default: true },
+    isActive: { type: Boolean, default: true },
     botId: String,
-    // __v: { type: Number, select: false }
 },
     {
+        versionKey: false,
         timestamps: true
     });
 

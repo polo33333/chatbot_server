@@ -2,6 +2,7 @@
 const Intent = require('../models/Intent.model');
 const sR = require('../functions/M_SendResponse.function');
 const message = require('../functions/C_String.function');
+const P_Wit = require('../functions/P_Wit.function');
 const fetch = require('node-fetch');
 const config = require('../../config');
 
@@ -12,8 +13,8 @@ module.exports = {
     getAll: async (req, res) => {
         try {
 
-            const { botId } = req.params;
-            const int = await Intent.find({ botId: botId });
+            let { botId } = req.params;
+            let int = await Intent.find({ botId: botId });
             return sR.sendResponse(res, 200, int, message.getSuccess);
 
         } catch (error) {
@@ -26,8 +27,8 @@ module.exports = {
     // get by id
     getById: async (req, res) => {
         try {
-            const { intentId } = req.params;
-            const int = await Intent.findById(intentId);
+            let { intentId } = req.params;
+            let int = await Intent.findById(intentId);
             return sR.sendResponse(res, 200, int, message.getSuccess);
 
         } catch (error) {
@@ -42,23 +43,16 @@ module.exports = {
 
         try {
 
-            const { botId } = req.params;
-            var obj = req.body;
+            let { botId } = req.params;
+            let obj = req.body;
             obj.botId = botId;
-            const resWit = await fetch('https://api.wit.ai/entities/intent/values' + config.version, {
-                method: "POST",
-                headers: { Authorization: config.auth + botId },
-                body: JSON.stringify({
-                    value: obj.name,
-                })
-            });
-            const json = await resWit.json();
-            //console.log(json);
+            let json = await P_Wit.createIntent(obj.name, botId);
             if (json.error == undefined) {
-                const intent = await Intent.create(obj);
-                return sR.sendResponse(res, 200, intent, message.createSuccess);
+                let int = await Intent.create(obj);
+                return sR.sendResponse(res, 200, int, message.createSuccess);
             }
 
+            return sR.sendResponse(res, 400, null, message.createFail);
 
         } catch (error) {
 
@@ -109,21 +103,16 @@ module.exports = {
     remove: async (req, res) => {
         try {
 
-            const { botId, intentId } = req.params;
-            const intent = await Intent.findByIdAndRemove(intentId);
-            if (intent) {
-                const resWit = await fetch('https://api.wit.ai/entities/intent/values/' + intent.name + config.version, {
-                    method: "DELETE",
-                    headers: { Authorization: 'Bearer ' + botId }
-                });
-                const json = await resWit.json();
+            let { botId, intentId } = req.params;
+            let curr = await Intent.findById(intentId);
+            if (curr) {
+                let json = await P_Wit.deleteIntent(curr.name, botId);
+                if (json) {
+                    let ent = await Intent.findByIdAndDelete(intentId);
+                    return sR.sendResponse(res, 200, ent, message.deleteSuccess);
+                }
 
-                if (json.success == true || json.code != 'bad-request') {
-                    return sR.sendResponse(res, 200, null, message.deleteSuccess);
-                }
-                else {
-                    return sR.sendResponse(res, 400, null, message.deleteFail);
-                }
+                return sR.sendResponse(res, 400, null, message.deleteFail);
             }
             return sR.sendResponse(res, 200, null, null);
 

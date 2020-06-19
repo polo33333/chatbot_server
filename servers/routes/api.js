@@ -13,13 +13,14 @@ const History = require('../controllers/History.controller');
 const Customer = require('../controllers/Customer.controller');
 const UnknowRequest = require('../controllers/UnknowRequest.controller');
 const SupportRequest = require('../controllers/SupportRequest.controller');
-const Article = require('../controllers/Article.controller');
 const BroadCast = require('../controllers/BroadCast.controller');
-const Zalo = require('../controllers/Zalo.controller');
-const Facebook = require('../controllers/Facebook.controller');
+const Zalo = require('../functions/P_Zalo.function');
+const Facebook = require('../functions/P_Facebook.function');
 const LiveChat = require('../controllers/LiveChat.controller');
 const Notification = require('../controllers/Notification.controller');
 const Statistic = require('../controllers/Statistic.controller');
+const Survey = require('../controllers/Survey.controller');
+const Variable  = require('../controllers/Variable.controller');
 const Auth = require('../controllers/Auth.controller');
 const FileUpload = require('../controllers/FileUpload.controller');
 const uploadMulter = require('../functions/M_ModelMulter.function');
@@ -48,11 +49,22 @@ router.put('/Ai/Bots/:botId/Intents/:intentId', Intent.update);
 router.delete('/Ai/Bots/:botId/Intents/:intentId', Intent.remove);
 
 // Entities
-router.get('/Ai/Bots/:botId/Entities', Entity.getAll);
+router.get('/Ai/Bots/:botId/Entities', Entity.getEntities);
+//router.get('/Ai/Bots/:botId/Entities', Entity.getAll);
+//router.get('/Ai/Bots/:botId/Variables', Entity.getVariables);
+router.get('/Ai/Bots/:botId/Entities/:entityId/Info', Entity.getInfo);
 router.get('/Ai/Bots/:botId/Entities/:entityId', Entity.getById);
 router.post('/Ai/Bots/:botId/Entities', Entity.create);
 router.put('/Ai/Bots/:botId/Entities/:entityId', Entity.update);
 router.delete('/Ai/Bots/:botId/Entities/:entityId', Entity.remove);
+
+
+// Variable
+router.get('/Ai/Bots/:botId/Variables', Variable.getAll);
+router.get('/Ai/Bots/:botId/Variables/:variableId', Variable.getById);
+router.post('/Ai/Bots/:botId/Variables', Variable.create);
+router.put('/Ai/Bots/:botId/Variables/:variableId', Variable.update);
+router.delete('/Ai/Bots/:botId/Variables/:variableId', Variable.remove);
 
 // Keywords
 router.post('/Ai/Bots/:botId/Entities/:entityId/Keywords/create', Keyword.create);
@@ -72,7 +84,8 @@ router.post('/Ai/Bots/:botId/UnderStrand', Sample.getUnderStrand);
 
 //Block
 router.get('/Ai/Bots/:botId/Blocks', Block.getAll);
-router.get('/Ai/Bots/:botId/Blocks/Menu', Block.getMenu);
+router.get('/Ai/Bots/:botId/Blocks/Menu/Default', Block.getMenu);
+router.get('/Ai/Bots/:botId/Blocks/Menu/CreateBlock', Block.getIntentInvalid);
 router.get('/Ai/Bots/:botId/Blocks/Defaut', Block.getDefaut);
 router.get('/Ai/Bots/:botId/Blocks/:blockId', Block.getById);
 router.post('/Ai/Bots/:botId/Blocks', Block.create);
@@ -115,12 +128,14 @@ router.get('/Ai/Bots/:botId/SupportRequest', SupportRequest.getAll);
 router.get('/Ai/Bots/:botId/SupportRequest/:requestId', SupportRequest.getById);
 router.delete('/Ai/Bots/:botId/SupportRequest/:requestId', SupportRequest.remove);
 
-//Article
-router.get('/Ai/Bots/:botId/Articles', Article.getAll);
-router.get('/Ai/Bots/:botId/Articles/:articleId', Article.getById);
-router.post('/Ai/Bots/:botId/Articles', Article.create);
-router.put('/Ai/Bots/:botId/Articles/:articleId', Article.update);
-router.delete('/Ai/Bots/:botId/Articles/:articleId', Article.remove);
+//Survey
+router.get('/Ai/Bots/:botId/Survey', Survey.getAll);
+router.get('/Ai/Bots/:botId/Survey/:surveyId', Survey.getById);
+router.get('/Ai/Bots/:botId/SurveyIsDesign', Survey.getByIsDesign);
+router.get('/Ai/Bots/:botId/SurveyIsUser', Survey.getByIsUser);
+router.post('/Ai/Bots/:botId/Survey', Survey.create);
+router.put('/Ai/Bots/:botId/Survey/:surveyId', Survey.update);
+router.delete('/Ai/Bots/:botId/Survey/:surveyId', Survey.remove);
 
 //LiveChat
 router.get('/Ai/Bots/:botId/LiveChats/:customerId', LiveChat.getById);
@@ -142,7 +157,6 @@ router.get('/Ai/Bots/:botId/Statistics/getChart4', Statistic.getChart4);
 router.get('/Ai/Bots/:botId/BroadCast/getHistrory', BroadCast.getHistrory);
 router.get('/Ai/Bots/:botId/BroadCast/getSchedule', BroadCast.getSchedule);
 router.post('/Ai/Bots/:botId/BroadCast', BroadCast.create);
-// router.put('/Ai/Bots/:botId/Articles/:articleId', Article.update);
 router.delete('/Ai/Bots/:botId/BroadCast/:broadCastId', BroadCast.remove);
 
 
