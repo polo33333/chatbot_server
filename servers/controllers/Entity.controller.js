@@ -48,23 +48,6 @@ module.exports = {
         }
     },
 
-
-
-    // get variables with botId
-    // getVariables: async (req, res) => {
-    //     try {
-
-    //         let { botId } = req.params;
-    //         let result = await Entity.find({ botId: botId, isActive: true });
-    //         return sR.sendResponse(res, 200, result, message.getSuccess);
-
-    //     } catch (error) {
-
-    //         console.log('Error[Entity:getVariables]: ' + error);
-    //         return sR.sendResponse(res, 400, null, error);
-    //     }
-    // },
-
     // get by id
     getById: async (req, res) => {
         try {
@@ -101,22 +84,6 @@ module.exports = {
         }
     },
 
-
-    // get by id
-    search: async (req, res) => {
-        try {
-            const { entityId, searchText } = req.params;
-            const result = await Entity.find({ 'name': { '$regex': searchText, '$options': 'i' } });
-            //console.log(searchText);
-            return sR.sendResponse(res, 200, result, message.getSuccess);
-
-        } catch (error) {
-
-            console.log('Error[Entity:search]: ' + error);
-            return sR.sendResponse(res, 400, null, error);
-        }
-    },
-
     // create
     create: async (req, res) => {
 
@@ -130,13 +97,11 @@ module.exports = {
             obj.lookups = obj.lookups == 3 ? ['free-text', 'keywords'] : obj.lookups == 1 ? ['keywords'] : ['free-text'];
             let json = await P_Wit.createEntity(obj, botId);
             obj.lookups = temp;
-
             if (json.error == undefined) {
                 let ent = await Entity.create(obj);
                 return sR.sendResponse(res, 200, ent, message.createSuccess);
             }
-
-            return sR.sendResponse(res, 400, null, message.createFail);
+            return sR.sendResponse(res, 200, null, message.createFail);
 
         } catch (error) {
 
@@ -208,4 +173,13 @@ module.exports = {
         }
 
     }
+}
+
+// check is wit entity if start name  wit/...
+isCheckSystem = (name) => {
+    let wit_entity = name.slice(4);
+    if (wit_entity == 'wit/')
+        return true;
+    return false;
+
 }

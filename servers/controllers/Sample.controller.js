@@ -84,9 +84,9 @@ module.exports = {
         try {
             let { botId } = req.params;
             let obj = req.body;
-            console.log(req.body)
+            //console.log(req.body)
             let json = await P_WitFunction.createUtterances(obj, botId);
-            console.log(json)
+            //console.log(json)
             if (json.sent == true) {
                 await UnknowRequest.findOneAndDelete({ text: obj.text, botId: botId });
                 return sR.sendResponse(res, 200, null, message.createSuccess);

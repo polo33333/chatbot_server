@@ -579,7 +579,7 @@ getWorks = async (intentName, blocId, botId) => {
                     break;
                 case support_card:
                     {
-                        if (!(item.items[0].content == null || item.items[0].content == ''))
+                       // if (!(item.items[0].content == null || item.items[0].content == ''))
                         works.push(item);
                     }
                     break;
@@ -684,11 +684,13 @@ supportfunc = async (memoryId, obj, channel_token) => {
             temp.channel = cus.channel;
             temp.intentName = obj.intentName;
 
-            let obj_pro = {};
-            obj_pro['content'] = obj.content;
-            obj_pro['button'] = [];
-            obj_pro['template_type'] = 'text';
-            await bot_send(mem.senderId, obj_pro, mem.channel, channel_token, mem.botId);
+            if(obj.content != null || obj.console != ''){
+                let obj_pro = {};
+                obj_pro['content'] = obj.content;
+                obj_pro['button'] = [];
+                obj_pro['template_type'] = 'text';
+                await bot_send(mem.senderId, obj_pro, mem.channel, channel_token, mem.botId);
+            }
             await SupportRequest.create(temp);
             sever.callsocket('support_request', { senderId: mem.senderId, botId: mem.botId });
             await Notification.create(mem.botId, 'Yêu cầu hỗ trợ', 'support_request', { senderId: mem.senderId, botId: mem.botId })

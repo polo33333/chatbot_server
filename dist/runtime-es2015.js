@@ -64,7 +64,7 @@
 /******/
 /******/ 	// script path function
 /******/ 	function jsonpScriptSrc(chunkId) {
-/******/ 		return __webpack_require__.p + "" + ({"default~bot-bot-module~customer-customer-module":"default~bot-bot-module~customer-customer-module","bot-bot-module":"bot-bot-module","customer-customer-module":"customer-customer-module"}[chunkId]||chunkId) + "-es2015.js"
+/******/ 		return __webpack_require__.p + "" + ({"customer-customer-module":"customer-customer-module","bot-bot-module":"bot-bot-module"}[chunkId]||chunkId) + "-es2015.js"
 /******/ 	}
 /******/
 /******/ 	// The require function

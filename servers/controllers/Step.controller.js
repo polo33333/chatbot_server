@@ -347,6 +347,15 @@ update_Card_Item = async (res, obj) => {
                     await step.save();
                     return sR.sendResponse(res, 200, null, message.updateSuccess);
                 }
+            case 'elememt_position':
+                {
+                    if (obj.elememts != undefined) {
+                        step.items[0].elememts = obj.elememts;
+                    }
+                    step.markModified('items');
+                    await step.save();
+                    return sR.sendResponse(res, 200, null, message.updateSuccess);
+                }
             default:
                 return sR.sendResponse(res, 400, null, message.updateFail);
         }
@@ -393,6 +402,7 @@ update_Card_Button = async (res, obj) => {
 
 update_Card_Condition = async (res, obj) => {
     try {
+
         let step = await Step.findById(obj._id);
         if (obj.action == 'add')
             step.conditions.push({ name: null, math_type: 0, value: null });
@@ -408,7 +418,7 @@ update_Card_Condition = async (res, obj) => {
                 step.conditions.splice(obj.index, 1);
         }
 
-        step.markModified('condition');
+        step.markModified('conditions');
         await step.save();
         return sR.sendResponse(res, 200, step, message.updateSuccess);
     } catch (error) {

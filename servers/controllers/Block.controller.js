@@ -67,7 +67,9 @@ module.exports = {
                     }
                 }
                 if (count > 0)
-                    menu.push(el);
+                    menu.push({ name: el.name, disabled: true });
+                else
+                    menu.push({ name: el.name, disabled: false });
             }
             return sR.sendResponse(res, 200, menu, message.getSuccess);
 
@@ -146,6 +148,14 @@ module.exports = {
                 let bloc_curr = await Block.findById(blockId);
                 if (obj.name != undefined) {
                     bloc_curr.name = obj.name;
+                    let bloc = await bloc_curr.save();
+                    if (bloc)
+                        return sR.sendResponse(res, 200, bloc, message.updateSuccess);
+                    return sR.sendResponse(res, 400, null, message.updateFail);
+                }
+
+                if (obj.intentName != undefined) {
+                    bloc_curr.intentName = obj.intentName;
                     let bloc = await bloc_curr.save();
                     if (bloc)
                         return sR.sendResponse(res, 200, bloc, message.updateSuccess);
