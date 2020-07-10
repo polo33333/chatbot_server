@@ -3,6 +3,7 @@ const Config = require('../models/Config.model');
 const fetch = require('node-fetch');
 const sever = require('../../server');
 const config = require('../../config');
+const fs = require('fs');
 
 
 module.exports = {
@@ -391,14 +392,30 @@ module.exports = {
     },
 
     // imports
-    import: async (newapp, botId) => {
+    import: async (botName,wit_resource_path, botId) => {
         try {
-            let resWit = await fetch('https://api.wit.ai/import' + config.version + `&name=${newapp}&private=false`, {
-                method: "POST",
-                headers: { 'Authorization': config.auth + botId, 'Content-Type': 'application/zip' },
+
+            let stats = fs.statSync(wit_resource_path);
+            let fileSizeInBytes = stats.size;
+
+            // You can pass any of the 3 objects below as body
+            let readStream = fs.createReadStream(wit_resource_path);
+            //var stringContent = fs.readFileSync('foo.txt', 'utf8');
+            //var bufferContent = fs.readFileSync('foo.txt');
+
+            let resWit = await fetch('https://api.wit.ai/import' + config.version + `&name=${botName}&private=true`, {
+                method: 'POST',
+                headers: {
+                    "Content-length": fileSizeInBytes,
+                    'Content-Type': 'application/zip',
+                    'Authorization': config.auth + botId,
+                },
+                body: readStream // Here, stringContent or bufferContent would also work
             });
+
             let json = await resWit.json();
             return json;
+            
         } catch (error) {
             console.log('Error[P_Wit:import]: ' + error);
             return null;

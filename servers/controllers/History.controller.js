@@ -11,8 +11,8 @@ module.exports = {
     getAll: async (req, res) => {
         try {
 
-            const { botId } = req.params;
-            const his = await History.find({ botId: botId}).sort({createdAt: -1}).limit(300);                    
+            let { botId } = req.params;
+            let his = await History.find({ botId: botId}).sort({createdAt: -1}).limit(300);                    
             return sR.sendResponse(res, 200, his, message.getSuccess);
 
         } catch (error) {
@@ -25,8 +25,8 @@ module.exports = {
     // get by id
     getById: async (req, res) => {
         try {
-            const { historyId } = req.params;
-            const his = await History.findById(historyId);            
+            let { historyId } = req.params;
+            let his = await History.findById(historyId);            
             return sR.sendResponse(res, 200, his, message.getSuccess);
 
         } catch (error) {
@@ -41,8 +41,8 @@ module.exports = {
     remove: async (req, res) => {
         try {
 
-            const { historyId } = req.params;
-            const his = await History.findByIdAndRemove(historyId);
+            let { historyId } = req.params;
+            let his = await History.findByIdAndRemove(historyId);
             if (his) {
                 return sR.sendResponse(res, 200, null, message.deleteSuccess);
             }

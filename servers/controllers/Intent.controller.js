@@ -64,11 +64,11 @@ module.exports = {
     update: async (req, res) => {
         try {
 
-            const { botId, intentId } = req.params;
-            var obj = req.body;
-            var int = await Intent.findById(intentId);
-            var ojw = {};
-            var intentName = int.name;
+            let { botId, intentId } = req.params;
+            let obj = req.body;
+            let int = await Intent.findById(intentId);
+            let ojw = {};
+            let intentName = int.name;
             if (obj.name != undefined) {
                 ojw.id = obj.name;
                 int.name = obj.name;
@@ -77,14 +77,13 @@ module.exports = {
                 ojw.doc = obj.desc;
                 int.desc = obj.desc;
             }
-            console.log(obj)
-            const resWit = await fetch('https://api.wit.ai/entities/intent/values' + intentName + config.version, {
+            let resWit = await fetch('https://api.wit.ai/entities/intent/values' + intentName + config.version, {
                 method: "PUT",
                 headers: { Authorization: config.auth + botId },
                 body: JSON.stringify(ojw)
 
             });
-            const json = await resWit.json();
+            let json = await resWit.json();
             if (json.error == undefined) {
                 let int1 = await Ịntent.updateOne({ _id: int._id }, int);
                 return sR.sendResponse(res, 200, int1, message.createSuccess);

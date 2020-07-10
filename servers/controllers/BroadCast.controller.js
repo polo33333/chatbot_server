@@ -15,8 +15,8 @@ module.exports = {
     getHistrory: async (req, res) => {
         try {
 
-            const { botId } = req.params;
-            const ans = await BroadCast.find({ 'isSchedule': false, botId: botId }).sort({ createdAt: -1 });
+            let { botId } = req.params;
+            let ans = await BroadCast.find({ 'isSchedule': false, botId: botId }).sort({ createdAt: -1 });
             return sR.sendResponse(res, 200, ans, message.getSuccess);
 
         } catch (error) {
@@ -29,8 +29,8 @@ module.exports = {
     // get Schedule
     getSchedule: async (req, res) => {
         try {
-            const { botId } = req.params;
-            const ans = await BroadCast.find({ 'isSchedule': true, botId: botId }).sort({ createdAt: -1 });
+            let { botId } = req.params;
+            let ans = await BroadCast.find({ 'isSchedule': true, botId: botId }).sort({ createdAt: -1 });
             return sR.sendResponse(res, 200, ans, message.getSuccess);
 
         } catch (error) {
@@ -44,9 +44,9 @@ module.exports = {
     create: async (req, res) => {
         try {
 
-            const { botId } = req.params;
-            const con = await Config.findOne({ botId: botId });
-            var obj = req.body;
+            let { botId } = req.params;
+            let con = await Config.findOne({ botId: botId });
+            let obj = req.body;
             if (!obj.isSchedule) {
                 switch (obj.channel) {
                     case zalo:
@@ -93,7 +93,7 @@ module.exports = {
     remove: async (req, res) => {
         try {
 
-            const { broadCastId } = req.params;
+            let { broadCastId } = req.params;
             await BroadCast.findByIdAndRemove(broadCastId);
             return sR.sendResponse(res, 200, null, message.deleteSuccess);
 

@@ -8,7 +8,7 @@ var message = require('../functions/C_String.function');
 // get script by botid method
 exports.getAll = async function (req, res) {
     try {
-        const result = await Config.findOne({ botId: req.params.botId });
+        let result = await Config.findOne({ botId: req.params.botId });
         if (result) {
             return sR.sendResponse(res, 200, result, message.getSuccess);
         }

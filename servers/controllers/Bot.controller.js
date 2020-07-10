@@ -264,7 +264,7 @@ module.exports = {
     // get all
     getAll: async (req, res, next) => {
         try {
-            const result = await Bot.find();
+            let result = await Bot.find();
             return sR.sendResponse(res, 200, result, message.getSuccess);
 
         } catch (error) {
@@ -278,8 +278,8 @@ module.exports = {
     getById: async (req, res) => {
         try {
 
-            const { botId } = req.params;
-            const result = await Bot.findOne({ botId: botId });
+            let { botId } = req.params;
+            let result = await Bot.findOne({ botId: botId });
             return sR.sendResponse(res, 200, result, message.getSuccess);
 
         } catch (error) {
@@ -295,7 +295,7 @@ module.exports = {
         try {
 
             let obj = req.body;
-            let json = await P_Wit.createApp(obj);
+            let json = await P_Wit.import(obj.name,wit_resource_path,obj.botId);
             if (json.error == undefined) {
                 obj.appId = json.app_id;
                 obj.botId = json.access_token;
@@ -306,7 +306,6 @@ module.exports = {
                         for (let i = 0; i < item['intents'].length; i++) {
                             let temp = item['intents'][i];
                             temp.botId = bot.botId;
-                            await P_Wit.createIntent(temp.name, bot.botId);
                             await Intent.create(temp);
                         }
                     if (item['entites'].length > 0)
@@ -358,13 +357,13 @@ module.exports = {
     remove: async (req, res) => {
         try {
 
-            const { botId } = req.params;
-            const bots = await Bot.findOne({ botId: botId });
-            const response = await fetch('https://api.wit.ai/apps/' + bots.appId + config.version, {
+            let { botId } = req.params;
+            let bots = await Bot.findOne({ botId: botId });
+            let response = await fetch('https://api.wit.ai/apps/' + bots.appId + config.version, {
                 method: "DELETE",
                 headers: { Authorization: 'Bearer ' + botId }
             });
-            const json = await response.json();
+            let json = await response.json();
 
             if (json.error == undefined) {
                 let bot = await Bot.findOneAndDelete({ botId: botId });

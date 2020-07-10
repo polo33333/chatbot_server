@@ -11,8 +11,8 @@ module.exports = {
     getAll: async (req, res) => {
         try {
 
-            const { botId } = req.params;
-            const r = await UnknowRequest.find({ botId: botId});
+            let { botId } = req.params;
+            let r = await UnknowRequest.find({ botId: botId});
             return sR.sendResponse(res, 200, r, message.getSuccess);
 
         } catch (error) {
@@ -25,8 +25,8 @@ module.exports = {
     // get by id
     getById: async (req, res) => {
         try {
-            const { requestId } = req.params;
-            const r = await UnknowRequest.findById(requestId);
+            let { requestId } = req.params;
+            let r = await UnknowRequest.findById(requestId);
 
             return sR.sendResponse(res, 200, r, message.getSuccess);
 
@@ -60,8 +60,8 @@ module.exports = {
     remove: async (req, res) => {
         try {
 
-            const { requestId } = req.params;
-            const r = await UnknowRequest.findByIdAndRemove(requestId);
+            let { requestId } = req.params;
+            let r = await UnknowRequest.findByIdAndRemove(requestId);
             if (r) {
                 return sR.sendResponse(res, 200, null, message.deleteSuccess);
             }

@@ -9,6 +9,7 @@ const Zalo = require('../functions/P_Zalo.function');
 const FaceBook = require('../functions/P_Facebook.function');
 const Notification = require('../controllers/Notification.controller');
 const M_Message_handling = require('./M_Message_handling.function');
+const P_Wit = require('./P_Wit.function');
 const M_Condition = require('../functions/M_Condition.function');
 const fetch = require('node-fetch');
 const config = require('../../config');
@@ -18,7 +19,7 @@ const { find } = require('../models/Memory,model');
 const zalo = 'zalo';
 const face = 'facebook';
 const default_answer = '$default_answer';
-const text_card = 'text-card'; 
+const text_card = 'text-card';
 const form_card = 'form-card';
 const info_card = 'info-card';
 const product_card = 'product-card';
@@ -302,7 +303,7 @@ bot_brain = async (message, sender_id, memoryId, is_mapping, channel, channel_to
                             data.button = [{
                                 title: "Đi đến Khảo sát",
                                 type: "url",
-                                url : config.server_url +'/surveys?id='+ data.surveyId +'&sender_id=' + sender_id,
+                                url: config.server_url + '/surveys?id=' + data.surveyId + '&sender_id=' + sender_id,
                                 //url: config.server_url,
                             }];
                             mem.works.shift();
@@ -447,12 +448,7 @@ getVariable = (key, mem) => {
 // return json of wit
 wit_understanding = async (text, botId) => {
     try {
-        let response = await fetch('https://api.wit.ai/message' + config.version + '&q=' + encodeURI(text), {
-            method: "GET",
-            headers: { Authorization: config.auth + botId },
-        });
-
-        let json = await response.json();
+        let json = await P_Wit.getMessage(text, botId)
         if (json.error == undefined)
             return json;
         return null;
@@ -517,12 +513,12 @@ getWorks = async (intentName, blocId, botId) => {
                     break;
                 case info_card:
                     {
-                        if(item.items[0].elememts.length >0){
+                        if (item.items[0].elememts.length > 0) {
                             let el = item.items[0].elememts;
                             let count = 0;
                             el.forEach(i => {
-                                if(i.title == null || i.title == '')
-                                item.items[0].elememts.splice(count, 1);
+                                if (i.title == null || i.title == '')
+                                    item.items[0].elememts.splice(count, 1);
                                 count++;
                             });
                         }
@@ -531,12 +527,12 @@ getWorks = async (intentName, blocId, botId) => {
                     break;
                 case product_card:
                     {
-                        if(item.items[0].elememts.length >0){
+                        if (item.items[0].elememts.length > 0) {
                             let el = item.items[0].elememts;
                             let count = 0;
                             el.forEach(i => {
-                                if(i.title == null || i.title == '')
-                                item.items[0].elememts.splice(count, 1);
+                                if (i.title == null || i.title == '')
+                                    item.items[0].elememts.splice(count, 1);
                                 count++;
                             });
                         }
@@ -563,7 +559,7 @@ getWorks = async (intentName, blocId, botId) => {
                 case go_to_card:
                     {
                         if (!(item.items[0].blockId == null))
-                        works.push(item);
+                            works.push(item);
                     }
                     break;
                 case memory_card:
@@ -573,13 +569,13 @@ getWorks = async (intentName, blocId, botId) => {
                     break;
                 case phone_card:
                     {
-                        if (!(item.items[0].content == null || item.items[0].content == '' ))
-                        works.push(item);
+                        if (!(item.items[0].content == null || item.items[0].content == ''))
+                            works.push(item);
                     }
                     break;
                 case support_card:
                     {
-                       // if (!(item.items[0].content == null || item.items[0].content == ''))
+                        // if (!(item.items[0].content == null || item.items[0].content == ''))
                         works.push(item);
                     }
                     break;
@@ -590,10 +586,10 @@ getWorks = async (intentName, blocId, botId) => {
                     break;
                 case survey_card:
                     {
-                        if (!(item.items[0].content == null || item.items[0].content == '' || item.items[0].surveyId == null)){
+                        if (!(item.items[0].content == null || item.items[0].content == '' || item.items[0].surveyId == null)) {
                             works.push(item);
                         }
-                        
+
                     }
                     break;
                 default:
@@ -684,7 +680,7 @@ supportfunc = async (memoryId, obj, channel_token) => {
             temp.channel = cus.channel;
             temp.intentName = obj.intentName;
 
-            if(obj.content != null || obj.console != ''){
+            if (obj.content != null || obj.console != '') {
                 let obj_pro = {};
                 obj_pro['content'] = obj.content;
                 obj_pro['button'] = [];

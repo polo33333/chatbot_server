@@ -12,7 +12,7 @@ module.exports = {
     getAllUser: async (req, res) => {
         try {
 
-            const { botId } = req.params;
+            let { botId } = req.params;
 
             let r = await Auth.find({ botId: botId });
             return sR.sendResponse(res, 200, r, message.getSuccess);
@@ -27,7 +27,7 @@ module.exports = {
     // get user by id
     getUserById: async (req, res) => {
         try {
-            const { userId } = req.params;
+            let { userId } = req.params;
             let r = await Auth.findById(userId);
 
             return sR.sendResponse(res, 200, r, message.getSuccess);
@@ -72,7 +72,7 @@ module.exports = {
     removeUser: async (req, res) => {
         try {
 
-            const { userId } = req.params;
+            let { userId } = req.params;
             let r = await Auth.findByIdAndRemove(userId);
             if (r) {
                 return sR.sendResponse(res, 200, null, message.deleteSuccess);

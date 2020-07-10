@@ -114,7 +114,7 @@ module.exports = {
     update: async (req, res) => {
         try {
 
-            const { botId, entityId } = req.params;
+            let { botId, entityId } = req.params;
             let obj = req.body;
             let ent = await Entity.findById(entityId);
             let entityName = ent.name;

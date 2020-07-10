@@ -19,7 +19,7 @@ module.exports = {
     getAll: async (req, res) => {
         try {
 
-            const { botId } = req.params;
+            let { botId } = req.params;
             let noti = await Notification.find({ botId: botId }).sort({ createdAt: -1 }).limit(50);
             if (noti)
                 return sR.sendResponse(res, 200, noti, message.getSuccess);
@@ -56,7 +56,7 @@ module.exports = {
     remove: async (req, res) => {
         try {
 
-            const { botId, notificationId } = req.params;
+            let { botId, notificationId } = req.params;
             let noti = await Notification.findByIdAndRemove(notificationId);
             if (noti) {
                 return sR.sendResponse(res, 200, null, message.deleteSuccess);
