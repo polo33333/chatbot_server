@@ -14,7 +14,7 @@ const M_Condition = require('../functions/M_Condition.function');
 const fetch = require('node-fetch');
 const config = require('../../config');
 const sever = require('../../server');
-const { find } = require('../models/Memory,model');
+const Memory = require('../models/Memory,model');
 
 const zalo = 'zalo';
 const face = 'facebook';

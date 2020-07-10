@@ -1,35 +1,4 @@
 
-
-// let conditions = [
-//     { name: 'goi_cuoc', math_type: 0, value: "12mc90" },
-//     { name: null, math_type: 0, value: null },
-//     { name: "number", math_type: 0, value: '12' },
-// ]
-
-
-// let variables = [
-//     { name: "goi_cuoc", role: "goi_cuoc", type: 'String' },
-//     { name: "phone", role: "phone", type: 'Boolean' },
-//     { name: "number", role: "number", type: 'Number' },
-//     { name: "address", role: "address", type: 'String' },
-//     { name: "sender_id", role: "so_luong", type: 'String' },
-// ]
-
-// let mem = {
-//     works: [],
-//     variables: [
-//         { name: "sender_id", value: "7392682985099443112" },
-//         { name: "sender_name", value: "Tran duc thai" },
-//         { name: "phone", value: "0946494653" },
-//         { name: "number", value: "12" },
-//         { name: "address", value: "HCM" },
-//         { name: "goi_cuoc", value: "12mc90" },
-//     ]
-
-// }
-
-
-
 // check condition for card in bot_brain
 exports.condition_checking = (conditions, entities, mem) => {
     try {
