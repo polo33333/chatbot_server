@@ -5,48 +5,48 @@ exports.condition_checking = (conditions, entities, mem) => {
         let check = true;
         for (let i = 0; i < conditions.length; i++) {
             let item = conditions[i];
-            if (item.name != null) {
-                let temp = variable_find(item.name, entities);
-                let mem_check = variable_find(item.name, mem.variables)
+            if (item.variable_id != null) {
+                let temp = variable_find(item.variable_id, entities);
+                let mem_check = variable_find(item.variable_id, mem.variables);
                 switch (item.math_type) {
-                    case 0: // =
+                    case '0': // =
                         {
-                            if (mem_check != null && data_convert(item.value, temp.type) === data_convert(mem_check.value, temp.type))
+                            if (mem_check != undefined  && data_convert(item.value, temp.type) == data_convert(mem_check.value, temp.type))
                                 check = true;
                             else return check = false;
                         }
                         break;
-                    case 1: // !=
+                    case '1': // !=
                         {
-                            if (mem_check != null && data_convert(item.value, temp.type) != data_convert(mem_check.value, item.value))
+                            if (mem_check != undefined  && data_convert(item.value, temp.type) != data_convert(mem_check.value, temp.type))
                                 check = true;
                             else return check = false;
                         }
                         break;
-                    case 2: // <
+                    case '2': // <
                         {
-                            if (mem_check != null && data_convert(item.value, temp.type) < data_convert(mem_check.value, item.value))
+                            if (mem_check != undefined  && data_convert(item.value, temp.type) > data_convert(mem_check.value, temp.type))
                                 check = true;
                             else return check = false;
                         }
                         break;
-                    case 3: // >
+                    case '3': // >
                         {
-                            if (mem_check != null && data_convert(item.value, temp.type) > data_convert(mem_check.value, item.value))
+                            if (mem_check != undefined  && data_convert(item.value, temp.type) < data_convert(mem_check.value, temp.type))
                                 check = true;
                             else return check = false;
                         }
                         break;
-                    case 4: // <=
+                    case '4': // <=
                         {
-                            if (mem_check != null && data_convert(item.value, temp.type) <= data_convert(mem_check.value, item.value))
+                            if (mem_check != undefined && data_convert(item.value, temp.type) >= data_convert(mem_check.value, temp.type))
                                 check = true;
                             else return check = false;
                         }
                         break;
-                    case 5: // >=
+                    case '5': // >=
                         {
-                            if (mem_check != null && data_convert(item.value, temp.type) >= data_convert(mem_check.value, item.value))
+                            if (mem_check != undefined  && data_convert(item.value, temp.type) <= data_convert(mem_check.value, temp.type))
                                 check = true;
                             else return check = false;
                         }
@@ -65,8 +65,8 @@ exports.condition_checking = (conditions, entities, mem) => {
     }
 }
 
-variable_find = (name, arr) => {
-    return temp = arr.find(o => o.name === name);
+variable_find = (variable_id, arr) => {
+    return temp = arr.find(o => o._id == variable_id);
 }
 
 data_convert = (value, type) => {

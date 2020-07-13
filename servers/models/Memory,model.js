@@ -6,7 +6,7 @@ var serviceSchema = new Schema(
         senderId: String,
         channel: String,
         variables: [
-            { name: String, value: String }
+            { _id: String, value: String }
         ],
         works: [
             Object

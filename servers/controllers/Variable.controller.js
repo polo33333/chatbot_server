@@ -49,6 +49,7 @@ module.exports = {
             obj.isEntity = false;
             obj.isActive = true;
             obj.isSystem = false;
+            //console.log(obj)
             let check = await Entity.findOne({ name: obj.name });
             if (check == null) {
                 let ent = await Entity.create(obj);
@@ -71,11 +72,12 @@ module.exports = {
             let { botId, variableId } = req.params;
             let obj = req.body;
             let ent = await Entity.findById(variableId);
-            let check = await Entity.findOne({ name: obj.name });
-            if (check == null || check._id == ent._id) {
+            let check = await Entity.findOne({ name: obj.name, _id: {'$ne': variableId } });
+
+            if (check == null ) {
                 if (obj.name != undefined) {
                     ent.name = obj.name;
-                    ent.role = obj.name;
+                    ent.roles = obj.name;
                 }
                 if (obj.type != undefined) {
                     ent.type = obj.type;

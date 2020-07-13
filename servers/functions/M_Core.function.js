@@ -14,7 +14,6 @@ const M_Condition = require('../functions/M_Condition.function');
 const fetch = require('node-fetch');
 const config = require('../../config');
 const sever = require('../../server');
-const Memory = require('../models/Memory,model');
 
 const zalo = 'zalo';
 const face = 'facebook';
@@ -111,7 +110,7 @@ exports.handlePostback = async (sender_id, message, channel, channel_token, botI
             await M_Message_handling.handleHistory(sender_id, message, null, 2, null, botId);
 
             if (obj.key != null && obj.value != null)
-                await saveVariable(mem._id, [{ key: obj.key, value: obj.value }], false);
+                await saveVariable(mem._id, [{ _id: obj._id, value: obj.value }], false);
 
             mem.works = works;
             await mem.save();
@@ -159,7 +158,7 @@ bot_brain = async (message, sender_id, memoryId, is_mapping, channel, channel_to
                     case product_card:
                         {
                             let pros = mem.works[0].items[0];
-                            let variable_search = mem.variables.filter(o => o.name === pros.variable);
+                            let variable_search = mem.variables.filter(o => o._id === pros.variable_id);
                             let result = [];
                             if (variable_search.length > 0)
                                 pros.elememts.forEach(pro => {
@@ -196,9 +195,10 @@ bot_brain = async (message, sender_id, memoryId, is_mapping, channel, channel_to
 
                             if (is_mapping) {
                                 if (Validate(mem.works[0].validation, message)) {
-                                    let value = await wit_value_checking(mem.works[0].validation, mem.works[0].name, message.replace(/\s/g, ''), botId)
-                                    mem.variables.push({ name: mem.works[0].name, value: value });
+                                    let value = await wit_value_checking(mem.works[0].validation, mem.works[0].variable_id, message.replace(/\s/g, ''), botId)
+                                    mem.variables.push({ _id: mem.works[0].variable_id, value: value });
                                     mem.works.shift();
+                                    is_mapping = false;
                                 }
                                 else {
                                     await bot_send(sender_id, mem.works[0], channel, channel_token, botId);
@@ -206,7 +206,7 @@ bot_brain = async (message, sender_id, memoryId, is_mapping, channel, channel_to
                                     return;
                                 }
                             } else {
-                                let variable_check = mem.variables.find(o => o.name === mem.works[0].name);
+                                let variable_check = mem.variables.find(o => o._id === mem.works[0].variable_id);
                                 if (variable_check) {
                                     mem.works.shift();
                                 } else {
@@ -221,21 +221,16 @@ bot_brain = async (message, sender_id, memoryId, is_mapping, channel, channel_to
                     case memory_card:
                         {
                             if (mem.works[0].items[0].isRemoveAll) {
-                                let cus = await Customer.findOne({ senderId: sender_id, botId: botId });
-                                let default_variables = [
-                                    { name: 'sender_id', value: sender_id },
-                                    { name: 'sender_name', value: cus.name },
-                                    { name: 'sender_input', value: null },
-                                    { name: 'nlp_predict', value: null },
-                                    { name: 'channel', value: channel }
-                                ];
-                                mem.variables = default_variables;
+                                let ent = await Entity.find({ botId: botId, isActive: true, isSystem: true, isEntity: false });
+                                mem.variables = mem.variables.filter(m => {
+                                    return ent.find(e => e._id == m._id);
+                                });
                             }
                             else {
                                 if (mem.works[0].items[0].removeVariables.length > 0) {
                                     for (let i1 = 0; i1 < mem.works[0].items[0].removeVariables.length; i1++) {
                                         let el1 = mem.works[0].items[0].removeVariables[i1];
-                                        let temp = mem.variables.find(o => o.name === el1);
+                                        let temp = mem.variables.find(o => o._id === el1);
                                         if (temp) {
                                             let index = mem.variables.indexOf(temp);
                                             mem.variables.splice(index, 1);
@@ -249,12 +244,12 @@ bot_brain = async (message, sender_id, memoryId, is_mapping, channel, channel_to
                                 for (let i2 = 0; i2 < mem.works[0].items[0].setVariables.length; i2++) {
                                     const el2 = mem.works[0].items[0].setVariables[i2];
 
-                                    let temp2 = mem.variables.find(o => o.name === el2.name);
+                                    let temp2 = mem.variables.find(o => o._id === el2.variable_id);
                                     if (temp2) {
                                         let index2 = mem.variables.indexOf(temp2);
                                         mem.variables[index2].value = el2.value;
                                     } else {
-                                        mem.variables.push({ name: el2.name, value: el2.value });
+                                        mem.variables.push({ _id: el2.variable_id, value: el2.value });
                                     }
 
                                 }
@@ -378,12 +373,19 @@ getMemmory = async (sender_id, channel, botId) => {
     if (!mem) {
         let obj = {};
         let cus = await Customer.findOne({ senderId: sender_id, botId: botId });
+        let ent = await Entity.find({botId: botId});
+        let $sender_id =ent.find( f=> f.name =='$sender_id') == undefined? null: ent.find( f=> f.name =='$sender_id')._id;
+        let $sender_name = ent.find( f=> f.name =='$sender_name') == undefined? null: ent.find( f=> f.name =='$sender_name')._id;
+        let $channel = ent.find( f=> f.name =='$channel') == undefined? null: ent.find( f=> f.name =='$channel')._id;
+        let $gender = ent.find( f=> f.name =='$gender') == undefined? null: ent.find( f=> f.name =='$gender')._id;
+        let $last_chat = ent.find( f=> f.name =='$last_chat') == undefined? null: ent.find( f=> f.name =='$last_chat')._id;
+
         let default_variables = [
-            { name: 'sender_id', value: sender_id },
-            { name: 'sender_name', value: cus.name },
-            { name: 'sender_input', value: null },
-            { name: 'nlp_predict', value: null },
-            { name: 'channel', value: channel }
+            { _id: $sender_id, value: sender_id },
+            { _id: $sender_name, value: cus.name },
+            { _id: $channel, value: channel },
+            { _id: $gender, value: cus.gender },
+            { _id: $last_chat, value: new Date().toISOString() }
         ];
         obj.senderId = sender_id;
         obj.botId = botId;
@@ -406,24 +408,24 @@ saveVariable = async (memoryId, variables, isCheck) => {
             ent.forEach(item => {
                 let ent_role = item.name + ':' + item.role;
                 if (variables[ent_role] != undefined) {
-                    let obj = mem.variables.find(o => o.name === item.name);
+                    let obj = mem.variables.find(o => o._id === item._id);
                     if (obj) {
                         let index = mem.variables.indexOf(obj);
-                        mem.variables[index] = { name: item.name, value: variables[ent_role][0].value };
+                        mem.variables[index] = { _id: item._id, value: variables[ent_role][0].value };
                     }
                     else
-                        mem.variables.push({ name: item.name, value: variables[ent_role][0].value });
+                        mem.variables.push({ _id: item._id, value: variables[ent_role][0].value });
                 }
             });
         }
         else {
-            let obj = mem.variables.find(o => o.name === variables[0].key);
+            let obj = mem.variables.find(o => o._id === variables[0].key);
             if (obj) {
                 let index = mem.variables.indexOf(obj);
-                mem.variables[index] = { name: variables[0].key, value: variables[0].value };
+                mem.variables[index] = { _id: variables[0].key, value: variables[0].value };
             }
             else
-                mem.variables.push({ name: variables[0].key, value: variables[0].value });
+                mem.variables.push({ _id: variables[0].key, value: variables[0].value });
         }
         await mem.save();
         return;
@@ -433,9 +435,9 @@ saveVariable = async (memoryId, variables, isCheck) => {
     }
 }
 // get value of Variable
-getVariable = (key, mem) => {
+getVariable = (id, mem) => {
     try {
-        let temp = mem.variables.find(o => o.name === key);
+        let temp = mem.variables.find(o => o._id === id);
         if (temp) {
             return temp.value;
         }
@@ -548,7 +550,7 @@ getWorks = async (intentName, blocId, botId) => {
                 case form_card:
                     {
                         item.items.forEach(f => {
-                            if (!(f.name == null || f.content == null || f.content == ''))
+                            if (!(f.variable_id == null || f.content == null || f.content == ''))
                                 f.type = form_card;
                             f.conditions = item.conditions;
                             works.push(f);
@@ -710,6 +712,10 @@ Validate = (type, text) => {
         if (text)
             switch (type) {
                 case null:
+                    {
+                        return true;
+                    }
+                case "null":
                     {
                         return true;
                     }

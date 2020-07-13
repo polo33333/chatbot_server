@@ -8,5 +8,5 @@ module.exports = {
     default_image: "/images/default_image.png",
     suggest_image: "/images/default_image.png",
     suggest_content: "Ý định của bạn là?",
-    server_url: "https://chatbox.tpsoft.vn"
+    server_url: "https://470636a57567.ngrok.io"
   };

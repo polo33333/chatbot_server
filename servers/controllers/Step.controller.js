@@ -172,10 +172,10 @@ update_Card_Item = async (res, obj) => {
             case 'form-card':
                 {
                     if (obj.action == 'add')
-                        step.items.push({ name: null, validation: null, content: null, button: [], template_type: "text" });
+                        step.items.push({ variable_id: null, validation: null, content: null, button: [], template_type: "text" });
                     else if (obj.action == 'update') {
-                        if (obj.name != undefined)
-                            step.items[obj.index].name = obj.name;
+                        if (obj.variable_id != undefined)
+                            step.items[obj.index].variable_id = obj.variable_id;
                         if (obj.validation != undefined)
                             step.items[obj.index].validation = obj.validation;
                         if (obj.content != undefined)
@@ -216,8 +216,8 @@ update_Card_Item = async (res, obj) => {
                     if (obj.action == 'add')
                         step.items[0].elememts.push({ title: null, subtitle: null, value: null, image_url: config.default_image, button: [] });
                     else if (obj.action == 'update') {
-                        if (obj.variable != undefined)
-                            step.items[0].variable = obj.variable;
+                        if (obj.variable_id != undefined)
+                            step.items[0].variable_id = obj.variable_id;
                         if (obj.title != undefined)
                             step.items[0].elememts[obj.index].title = obj.title;
                         if (obj.subtitle != undefined)
@@ -262,15 +262,15 @@ update_Card_Item = async (res, obj) => {
             case 'memory-card':
                 {
                     if (obj.action == 'add')
-                        step.items[0].setVariables.push({ name: null, value: null });
+                        step.items[0].setVariables.push({ variable_id: null, value: null });
                     else if (obj.action == 'update') {
                         if (obj.isRemoveAll != undefined)
                             step.items[0].isRemoveAll = obj.isRemoveAll;
                         if (obj.removeVariables != undefined)
                             step.items[0].removeVariables = obj.removeVariables;
 
-                        if (obj.name != undefined)
-                            step.items[0].setVariables[obj.index].name = obj.name;
+                        if (obj.variable_id != undefined)
+                            step.items[0].setVariables[obj.index].variable_id = obj.variable_id;
                         if (obj.value != undefined)
                             step.items[0].setVariables[obj.index].value = obj.value;
 
@@ -402,13 +402,12 @@ update_Card_Button = async (res, obj) => {
 
 update_Card_Condition = async (res, obj) => {
     try {
-
         let step = await Step.findById(obj._id);
         if (obj.action == 'add')
-            step.conditions.push({ name: null, math_type: 0, value: null });
+            step.conditions.push({ variable_id: null, math_type: '0', value: null });
         else if (obj.action == 'update') {
-            if (obj.name != undefined)
-                step.conditions[obj.index].name = obj.name;
+            if (obj.variable_id != undefined)
+                step.conditions[obj.index].variable_id = obj.variable_id;
             if (obj.math_type != undefined)
                 step.conditions[obj.index].math_type = obj.math_type;
             if (obj.value != undefined)
