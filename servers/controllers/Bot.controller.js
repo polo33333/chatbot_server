@@ -112,6 +112,183 @@ const data_botdefault = {
 
 }
 
+
+// const data_botdefault_test = {
+//     bots: {
+
+//     },
+//     intents: [
+//         {
+//             name: 'chao_hoi',
+//             isSystem: true,
+//         },
+//         {
+//             name: 'tam_biet',
+//             isSystem: true,
+//         },
+//         {
+//             name: 'ask_exchange_rate',
+//             isSystem: false,
+//         },
+//         {
+//             name: 'contact',
+//             isSystem: false,
+//         },
+//         {
+//             name: 'history',
+//             isSystem: false,
+//         },
+//         {
+//             name: 'menu',
+//             isSystem: false,
+//         },
+//         {
+//             name: 'product',
+//             isSystem: false,
+//         },
+//         {
+//             name: 'product_company',
+//             isSystem: false,
+//         },
+//         {
+//             name: 'product_personal',
+//             isSystem: false,
+//         },
+
+//         {
+//             name: 'promotion',
+//             isSystem: false,
+//         },
+//         {
+//             name: 'saving_rate',
+//             isSystem: false,
+//         },
+//         {
+//             name: 'transfer_money',
+//             isSystem: false,
+//         },
+//     ],
+//     entites: [
+//         {
+//             name: '$sender_id',
+//             roles: 'sender_id',
+//             type: 'String',
+//             desc: '[Biến hệ thống]: Id người gửi',
+//             isSystem: true,
+//             isActive: true,
+//             isEntity: false,
+//         },
+//         {
+//             name: '$sender_name',
+//             roles: 'sender_name',
+//             type: 'String',
+//             desc: '[Biến hệ thống]: Tên người gửi',
+//             isSystem: true,
+//             isActive: true,
+//             isEntity: false,
+//         },
+//         {
+//             name: '$gender',
+//             roles: 'gender',
+//             type: 'String',
+//             desc: '[Biến hệ thống]: Giới tính người gửi',
+//             isSystem: true,
+//             isActive: true,
+//             isEntity: false,
+//         },
+//         {
+//             name: '$channel',
+//             roles: 'channel',
+//             type: 'String',
+//             desc: '[Biến hệ thống]: Kênh trao đổi',
+//             isSystem: true,
+//             isActive: true,
+//             isEntity: false,
+//         },
+//         {
+//             name: '$last_chat',
+//             roles: 'last_chat',
+//             type: 'String',
+//             desc: '[Biến hệ thống]: Thời gian chat cuối cùng',
+//             isSystem: true,
+//             isActive: true,
+//             isEntity: false,
+//         },
+//         {
+//             name: '$last_intent',
+//             roles: 'last_intent',
+//             type: 'String',
+//             desc: '[Biến hệ thống]: Ý định cuối cùng',
+//             isSystem: true,
+//             isActive: true,
+//             isEntity: false,
+//         },
+//         {
+//             name: 'product',
+//             roles: 'product',
+//             type: 'String',
+//             desc: '[Biến nguoi dung]: Thực thể người dùng tự định nghĩa',
+//             isSystem: true,
+//             isActive: true,
+//             isEntity: false,
+//         },
+
+//         {
+//             name: 'transfer_amount',
+//             roles: 'transfer_amount',
+//             type: 'String',
+//             desc: '[Biến nguoi dung]: Thực thể người dùng tự định nghĩa',
+//             isSystem: true,
+//             isActive: true,
+//             isEntity: false,
+//         },
+
+//         {
+//             name: 'transfer_toaccount',
+//             roles: 'transfer_toaccount',
+//             type: 'String',
+//             desc: '[Biến nguoi dung]: Thực thể người dùng tự định nghĩa',
+//             isSystem: true,
+//             isActive: true,
+//             isEntity: false,
+//         },
+
+
+
+
+//     ],
+//     blocks: [
+//         {
+
+//             isActive: true,
+//             isDefaut: true,
+//             isParent: false,
+//             name: "Trả lời mặc định",
+//             intentName: "$default_answer",
+//             position: 0
+//         },
+//         {
+
+//             isDefaut: true,
+//             isActive: true,
+//             isParent: false,
+//             name: "Welcome",
+//             intentName: "chao_hoi",
+//             position: 0
+//         }
+
+//     ],
+//     steps: [
+//     ],
+//     configs: [
+//         {
+//             fa_verify_token: Date.now().toString(),
+//         }
+//     ]
+
+// }
+
+
 module.exports = {
 
     // get all
@@ -149,12 +326,15 @@ module.exports = {
 
             let obj = req.body;
             let json = await P_Wit.import(obj.name,'./wit_resource/bot_v2-2020-07-11-07-29-06.zip',config.access_token);
+            //let json = await P_Wit.import(obj.name,'./wit_resource/bot_v3-2020-07-26-02-18-25.zip',config.access_token);
+           // console.log(json)
             if (json.error == undefined) {
                 obj.appId = json.app_id;
                 obj.botId = json.access_token;
                 let bot = await Bot.create(obj);
                 if (bot) {
                     let item = data_botdefault;
+                    //let item = data_botdefault_test;
                     if (item['intents'].length > 0)
                         for (let i = 0; i < item['intents'].length; i++) {
                             let temp = item['intents'][i];

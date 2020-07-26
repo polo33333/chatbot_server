@@ -9,8 +9,8 @@ const M_Message_handling = require('../functions/M_Message_handling.function');
 const config = require('../../config');
 const Config = require('../models/Config.model');
 
-const zalo = 'zalo';
-const face = 'facebook';
+const C_String = require('../functions/C_String.function');
+
 
 module.exports = {
 
@@ -19,7 +19,7 @@ module.exports = {
     getById: async (req, res) => {
         try {
 
-            const { botId, customerId } = req.params;
+            let { botId, customerId } = req.params;
             let chat = await LiveChat.find({ senderId: customerId }).sort({ createdAt: -1 }).limit(50);
             if (chat)
                 return sR.sendResponse(res, 200, chat.reverse(), message.getSuccess);
@@ -36,14 +36,15 @@ module.exports = {
     create: async (req, res) => {
 
         try {
-            const { botId } = req.params;
-            var obj = req.body;
-            let con = await Config.findOne({botId: botId})
-            if (obj.platForm == zalo)
-                await Zalo.sendMessage(obj.senderId, obj, con.zalo_token);
-            else if (obj.platForm == face)
-                await FaceBook.sendMessage(obj.senderId, obj, con.fa_page_token);
-            await M_Message_handling.handleLiveChat([obj], obj.senderId, false, null, botId);
+            let { botId } = req.params;
+            let obj = req.body;
+            let con = await Config.findOne({ botId: botId });
+            //console.log(obj)
+            if (obj.channel == C_String.zalo)
+                await Zalo.sendMessage(obj.senderId, obj, con.zalo_token, botId);
+            else if (obj.channel == C_String.face)
+                await FaceBook.sendMessage(obj.senderId, obj, con.fa_page_token, botId);
+            //await M_Message_handling.handleLiveChat(obj, obj.senderId, false, null, botId);
 
             return sR.sendResponse(res, 200, null, message.getSuccess);
 

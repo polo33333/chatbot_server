@@ -5,8 +5,7 @@ const LiveChat = require('../models/LiveChat.model');
 const Reminder = require('../models/Reminder.model');
 const Config = require('../models/Config.model');
 const fetch = require('node-fetch');
-const zalo = 'zalo';
-const face = 'facebook';
+const C_String = require('./C_String.function');
 const sever = require('../../server');
 
 
@@ -36,7 +35,7 @@ module.exports = {
                 obj.botId = botId;
                 obj.channel = channel;
                 obj.senderId = senderId;
-                if (channel == zalo) {
+                if (channel == C_String.zalo) {
                     let resFetch = await fetch('https://openapi.zalo.me/v2.0/oa/getprofile?data={"user_id":' + senderId + '}&access_token=' + _token, {
                         method: "GET",
                     });
@@ -45,7 +44,7 @@ module.exports = {
                     obj.gender = json.data.user_gender;
                 }
 
-                if (channel == face) {
+                if (channel == C_String.face) {
                     let resFetch = await fetch('https://graph.facebook.com/' + senderId + '?fields=name,gender&access_token=' + _token, {
                         method: "GET",
                     });
@@ -114,20 +113,20 @@ module.exports = {
             let conf = await Config.findOne({ botId: botId });
             let isAllow = false;
 
-            if (cus.isSupport)
-                isAllow = false;
-            else isAllow = true;
-
             if (conf.isActive) {
-                if (cus.channel == face)
+                if (cus.channel == C_String.face)
                     if (conf.isFacebook)
                         isAllow = true;
-                    else isAllow = false;
+                    else return isAllow = false;
 
-                if (cus.channel == zalo)
+                if (cus.channel == C_String.zalo)
                     if (conf.isZalo)
                         isAllow = true;
-                    else isAllow = false;
+                    else return isAllow = false;
+
+                if (cus.isSupport)
+                    isAllow = false;
+                else isAllow = true;
             }
             else
                 isAllow = false;

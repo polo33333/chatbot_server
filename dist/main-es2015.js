@@ -173,6 +173,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _login_login_component__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ./login/login.component */ "./src/app/login/login.component.ts");
 /* harmony import */ var _page_intro_page_intro_component__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ./page-intro/page-intro.component */ "./src/app/page-intro/page-intro.component.ts");
 /* harmony import */ var _user_survey_user_survey_component__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ./user-survey/user-survey.component */ "./src/app/user-survey/user-survey.component.ts");
+/* harmony import */ var _shared_services_survey_service__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! ./shared/services/survey.service */ "./src/app/shared/services/survey.service.ts");
+
 
 
 
@@ -204,6 +206,7 @@ AppModule.ɵinj = _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdefineInjector
         _shared_services_user_service__WEBPACK_IMPORTED_MODULE_15__["UserService"],
         _shared_guards_auth_guard_service__WEBPACK_IMPORTED_MODULE_16__["AuthGuard"],
         _shared_services_authentication_service__WEBPACK_IMPORTED_MODULE_17__["AuthenticationService"],
+        _shared_services_survey_service__WEBPACK_IMPORTED_MODULE_22__["SurveyService"],
     ], imports: [[
             _angular_platform_browser__WEBPACK_IMPORTED_MODULE_0__["BrowserModule"],
             _angular_common_http__WEBPACK_IMPORTED_MODULE_4__["HttpClientModule"],
@@ -267,6 +270,7 @@ AppModule.ɵinj = _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdefineInjector
                     _shared_services_user_service__WEBPACK_IMPORTED_MODULE_15__["UserService"],
                     _shared_guards_auth_guard_service__WEBPACK_IMPORTED_MODULE_16__["AuthGuard"],
                     _shared_services_authentication_service__WEBPACK_IMPORTED_MODULE_17__["AuthenticationService"],
+                    _shared_services_survey_service__WEBPACK_IMPORTED_MODULE_22__["SurveyService"],
                 ],
                 bootstrap: [_app_component__WEBPACK_IMPORTED_MODULE_18__["AppComponent"]]
             }]
@@ -1066,8 +1070,8 @@ function UserSurveyComponent_div_9_Template(rf, ctx) { if (rf & 1) {
     _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵadvance"](1);
     _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵtextInterpolate"](item_r2.label);
     _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵadvance"](1);
-    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵpropertyInterpolate"]("id", item_r2.variable);
-    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵpropertyInterpolate"]("name", item_r2.variable);
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵpropertyInterpolate"]("id", item_r2._id);
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵpropertyInterpolate"]("name", item_r2._id);
     _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵproperty"]("ngModel", item_r2.value);
 } }
 class UserSurveyComponent {

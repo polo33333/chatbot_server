@@ -5,7 +5,7 @@ const request = require('request');
 const Core = require('../functions/M_Core.function');
 const M_Message_handling = require('./M_Message_handling.function');
 const config = require('../../config');
-const face = 'facebook';
+const C_String = require('./C_String.function');
 
 
 exports.webhookVerify = async (req, res) => {
@@ -133,11 +133,11 @@ handleMessage = async (botId, PAGE_ACCESS_TOKEN, sender_psid, received_message) 
     // Check if the message contains text
     if (received_message.text) {
         if (received_message.is_echo == undefined) {
-            await M_Message_handling.handleCustomer(sender_psid, face, PAGE_ACCESS_TOKEN, botId);
+            await M_Message_handling.handleCustomer(sender_psid, C_String.face, PAGE_ACCESS_TOKEN, botId);
             let isActive = await M_Message_handling.handleSupport(sender_psid, botId);
             await M_Message_handling.handleLiveChat(received_message.text, sender_psid, true, 'text', botId);
             if (isActive)
-                await Core.handleText(sender_psid, received_message.text, face, PAGE_ACCESS_TOKEN, botId);
+                await Core.handleText(sender_psid, received_message.text, C_String.face, PAGE_ACCESS_TOKEN, botId);
 
         }
 
@@ -146,11 +146,11 @@ handleMessage = async (botId, PAGE_ACCESS_TOKEN, sender_psid, received_message) 
 
 // Handles messaging_postbacks events
 handlePostback = async (botId, PAGE_ACCESS_TOKEN, sender_psid, received_postback) => {
-    await M_Message_handling.handleCustomer(sender_psid, face, PAGE_ACCESS_TOKEN, botId);
+    await M_Message_handling.handleCustomer(sender_psid, C_String.face, PAGE_ACCESS_TOKEN, botId);
     await M_Message_handling.handleLiveChat(received_postback.payload, sender_psid, true, 'btn', botId);
     let isActive = await M_Message_handling.handleSupport(sender_psid, botId);
     if (isActive)
-        await Core.handlePostback(sender_psid, received_postback.payload, face, PAGE_ACCESS_TOKEN, botId);
+        await Core.handlePostback(sender_psid, received_postback.payload, C_String.face, PAGE_ACCESS_TOKEN, botId);
 }
 
 

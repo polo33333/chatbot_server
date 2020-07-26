@@ -6,16 +6,20 @@ let entity = [
 ];
 
 let memory = [
-    {_id: 1, value: '2'},
-    {_id: 2, value: '2'},
-    // {_id: 3, value: '2'},
-    // {_id: 4, value: '2'},
-    // {_id: 5, value: '2'},
-    {_id: 6, value: '2'},
+    { _id: 1, value: '2' },
+    { _id: 2, value: '2' },
+    { _id: 3, value: '2' },
+    { _id: 4, value: '2' },
+    { _id: 5, value: '2' },
+    { _id: 6, value: '2' },
 ]
 
-function cacl(){
 
-    return  entity.find( f=> f.name =='$sender_name12');
+let content = " gia tri: {{sender_name1}} va {{sender_name1}} va {{sender_name3}}";
+function _Replace(a, b, x) {
+
+    let search = `${a}`  
+    let replacer = new RegExp(search, 'g')
+    return x.replace(replacer, b)
 }
-console.log(cacl());
+console.log(_Replace('{{sender_name1}}', '3', content));

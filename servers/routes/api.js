@@ -23,6 +23,7 @@ const Survey = require('../controllers/Survey.controller');
 const Variable  = require('../controllers/Variable.controller');
 const Auth = require('../controllers/Auth.controller');
 const FileUpload = require('../controllers/FileUpload.controller');
+const Utterance = require('../controllers/Utterance.controller');
 const uploadMulter = require('../functions/M_ModelMulter.function');
 
 // Router
@@ -145,6 +146,10 @@ router.delete('/Ai/Bots/:botId/LiveChats/:liveChatId', LiveChat.remove);
 //Notification
 router.get('/Ai/Bots/:botId/Notifications', Notification.getAll);
 router.delete('/Ai/Bots/:botId/Notifications/:notificationId', Notification.remove);
+
+//utterances
+router.get('/Ai/Bots/:botId/Utterances', Utterance.getAll);
+router.post('/Ai/Bots/:botId/Utterances/Remove', Utterance.remove);
 
 //Statistic
 router.get('/Ai/Bots/:botId/Statistics/getInfo', Statistic.getInfo);

@@ -1,7 +1,4 @@
-
-const Config = require('../models/Config.model');
 const fetch = require('node-fetch');
-const sever = require('../../server');
 const config = require('../../config');
 const fs = require('fs');
 
@@ -283,7 +280,7 @@ module.exports = {
                 body: JSON.stringify(arr)
             });
             let json = await resWit.json();
-            if (json.deleted != undefined)
+            if (json.sent == true)
                 return true;
             return false;
         } catch (error) {

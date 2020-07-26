@@ -14,22 +14,9 @@ const M_Condition = require('../functions/M_Condition.function');
 const fetch = require('node-fetch');
 const config = require('../../config');
 const sever = require('../../server');
+const C_String = require('./C_String.function');
+const M_MappingValue = require('./M_MappingValue.function');
 
-const zalo = 'zalo';
-const face = 'facebook';
-const default_answer = '$default_answer';
-const text_card = 'text-card';
-const form_card = 'form-card';
-const info_card = 'info-card';
-const product_card = 'product-card';
-const go_to_card = 'go-to-card';
-const image_card = 'image-card';
-const memory_card = 'memory-card';
-const api_card = 'api-card';
-const support_card = 'support-card';
-const phone_card = 'phone-card';
-const survey_card = 'survey-card';
-const not_found = 'Không có kết quả phù hợp với yêu cầu của bạn!';
 
 // ***main function***
 
@@ -42,7 +29,7 @@ exports.handleText = async (sender_id, message, channel, channel_token, botId) =
         let is_mapping = false;
         let wit_object = await wit_understanding(message, botId);
         let conf = await Config.findOne({ botId: botId });
-        let works_default = await getWorks(default_answer, null, botId);
+        let works_default = await getWorks(C_String.default_answer, null, botId);
         await M_Message_handling.handleCustomer(sender_id, channel.channel_token, botId);
 
         if (wit_object != null) {
@@ -137,25 +124,26 @@ bot_brain = async (message, sender_id, memoryId, is_mapping, channel, channel_to
                 mem.works.shift();
             else
                 switch (mem.works[0].type) {
-                    case text_card:
+                    case C_String.text_card:
+                        {
+                            mem.works[0].items[0].content = M_MappingValue.mapping(mem.works[0].items[0].content, mem.variables, ent);
+                            await bot_send(sender_id, mem.works[0].items[0], channel, channel_token, botId);
+                            mem.works.shift();
+                        }
+                        break;
+                    case C_String.image_card:
                         {
                             await bot_send(sender_id, mem.works[0].items[0], channel, channel_token, botId);
                             mem.works.shift();
                         }
                         break;
-                    case image_card:
+                    case C_String.info_card:
                         {
                             await bot_send(sender_id, mem.works[0].items[0], channel, channel_token, botId);
                             mem.works.shift();
                         }
                         break;
-                    case info_card:
-                        {
-                            await bot_send(sender_id, mem.works[0].items[0], channel, channel_token, botId);
-                            mem.works.shift();
-                        }
-                        break;
-                    case product_card:
+                    case C_String.product_card:
                         {
                             let pros = mem.works[0].items[0];
                             let variable_search = mem.variables.filter(o => o._id === pros.variable_id);
@@ -174,7 +162,7 @@ bot_brain = async (message, sender_id, memoryId, is_mapping, channel, channel_to
                                 await bot_send(sender_id, obj_pro, channel, channel_token, botId);
                             } else {
                                 let obj_pro = {};
-                                obj_pro['content'] = not_found;
+                                obj_pro['content'] = C_String.not_found_item;
                                 obj_pro['button'] = [];
                                 obj_pro['template_type'] = 'text';
                                 await bot_send(sender_id, obj_pro, channel, channel_token, botId);
@@ -183,14 +171,14 @@ bot_brain = async (message, sender_id, memoryId, is_mapping, channel, channel_to
                             mem.works.shift();
                         }
                         break;
-                    case go_to_card:
+                    case C_String.go_to_card:
                         {
                             works = await getWorks(null, mem.works[0].items[0].blockId, botId);
                             mem.works = works;
 
                         }
                         break;
-                    case form_card:
+                    case C_String.form_card:
                         {
 
                             if (is_mapping) {
@@ -218,7 +206,7 @@ bot_brain = async (message, sender_id, memoryId, is_mapping, channel, channel_to
 
                         }
                         break;
-                    case memory_card:
+                    case C_String.memory_card:
                         {
                             if (mem.works[0].items[0].isRemoveAll) {
                                 let ent = await Entity.find({ botId: botId, isActive: true, isSystem: true, isEntity: false });
@@ -258,19 +246,19 @@ bot_brain = async (message, sender_id, memoryId, is_mapping, channel, channel_to
 
                         }
                         break;
-                    case api_card:
+                    case C_String.api_card:
                         {
                             await apifunc(memoryId, mem.works[0].items[0]);
                             mem.works.shift();
                         }
                         break;
-                    case support_card:
+                    case C_String.support_card:
                         {
                             await supportfunc(memoryId, mem.works[0].items[0], channel_token);
                             mem.works.shift();
                         }
                         break;
-                    case phone_card:
+                    case C_String.phone_card:
                         {
 
                             if (Validate(mem.works[0].items[0].validation, message)) {
@@ -292,7 +280,7 @@ bot_brain = async (message, sender_id, memoryId, is_mapping, channel, channel_to
                             }
                         }
                         break;
-                    case survey_card:
+                    case C_String.survey_card:
                         {
                             let data = mem.works[0].items[0];
                             data.button = [{
@@ -354,9 +342,10 @@ bot_suggest = async (sender_id, intents, channel, channel_token, botId) => {
 // call send message fuction of channel 
 bot_send = async (sender_id, data, channel, channel_token, botId) => {
     try {
-        if (channel == zalo)
+        
+        if (channel == C_String.zalo)
             await Zalo.sendMessage(sender_id, data, channel_token, botId);
-        else if (channel == face)
+        else if (channel == C_String.face)
             await FaceBook.sendMessage(sender_id, data, channel_token, botId);
     } catch (error) {
         console.log('Error[M_Core:bot_send]: ' + error);
@@ -373,12 +362,12 @@ getMemmory = async (sender_id, channel, botId) => {
     if (!mem) {
         let obj = {};
         let cus = await Customer.findOne({ senderId: sender_id, botId: botId });
-        let ent = await Entity.find({botId: botId});
-        let $sender_id =ent.find( f=> f.name =='$sender_id') == undefined? null: ent.find( f=> f.name =='$sender_id')._id;
-        let $sender_name = ent.find( f=> f.name =='$sender_name') == undefined? null: ent.find( f=> f.name =='$sender_name')._id;
-        let $channel = ent.find( f=> f.name =='$channel') == undefined? null: ent.find( f=> f.name =='$channel')._id;
-        let $gender = ent.find( f=> f.name =='$gender') == undefined? null: ent.find( f=> f.name =='$gender')._id;
-        let $last_chat = ent.find( f=> f.name =='$last_chat') == undefined? null: ent.find( f=> f.name =='$last_chat')._id;
+        let ent = await Entity.find({ botId: botId });
+        let $sender_id = ent.find(f => f.name == '$sender_id') == undefined ? null : ent.find(f => f.name == '$sender_id')._id;
+        let $sender_name = ent.find(f => f.name == '$sender_name') == undefined ? null : ent.find(f => f.name == '$sender_name')._id;
+        let $channel = ent.find(f => f.name == '$channel') == undefined ? null : ent.find(f => f.name == '$channel')._id;
+        let $gender = ent.find(f => f.name == '$gender') == undefined ? null : ent.find(f => f.name == '$gender')._id;
+        let $last_chat = ent.find(f => f.name == '$last_chat') == undefined ? null : ent.find(f => f.name == '$last_chat')._id;
 
         let default_variables = [
             { _id: $sender_id, value: sender_id },
@@ -506,14 +495,14 @@ getWorks = async (intentName, blocId, botId) => {
 
         work_temp.forEach(item => {
             switch (item.type) {
-                case text_card:
+                case C_String.text_card:
                     {
                         if (!(item.items[0].content == null || item.items[0].content == '')) {
                             works.push(item);
                         }
                     }
                     break;
-                case info_card:
+                case C_String.info_card:
                     {
                         if (item.items[0].elememts.length > 0) {
                             let el = item.items[0].elememts;
@@ -527,7 +516,7 @@ getWorks = async (intentName, blocId, botId) => {
                         works.push(item);
                     }
                     break;
-                case product_card:
+                case C_String.product_card:
                     {
                         if (item.items[0].elememts.length > 0) {
                             let el = item.items[0].elememts;
@@ -541,52 +530,52 @@ getWorks = async (intentName, blocId, botId) => {
                         works.push(item);
                     }
                     break;
-                case image_card:
+                case C_String.image_card:
                     {
                         if (!(item.items[0].title == null || item.items[0].title == ''))
                             works.push(item);
                     }
                     break;
-                case form_card:
+                case C_String.form_card:
                     {
                         item.items.forEach(f => {
                             if (!(f.variable_id == null || f.content == null || f.content == ''))
-                                f.type = form_card;
+                                f.type = C_String.form_card;
                             f.conditions = item.conditions;
                             works.push(f);
                         });
 
                     }
                     break;
-                case go_to_card:
+                case C_String.go_to_card:
                     {
                         if (!(item.items[0].blockId == null))
                             works.push(item);
                     }
                     break;
-                case memory_card:
+                case C_String.memory_card:
                     {
                         works.push(item);
                     }
                     break;
-                case phone_card:
+                case C_String.phone_card:
                     {
                         if (!(item.items[0].content == null || item.items[0].content == ''))
                             works.push(item);
                     }
                     break;
-                case support_card:
+                case C_String.support_card:
                     {
                         // if (!(item.items[0].content == null || item.items[0].content == ''))
                         works.push(item);
                     }
                     break;
-                case api_card:
+                case C_String.api_card:
                     {
                         works.push(item);
                     }
                     break;
-                case survey_card:
+                case C_String.survey_card:
                     {
                         if (!(item.items[0].content == null || item.items[0].content == '' || item.items[0].surveyId == null)) {
                             works.push(item);

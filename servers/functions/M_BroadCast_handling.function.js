@@ -3,8 +3,7 @@ const Facebook = require('../functions/P_Facebook.function');
 const Zalo = require('../functions/P_Zalo.function');
 const Config = require('../models/Config.model');
 const Step = require('../models/Step.model');
-const zalo = 'zalo';
-const face = 'facebook';
+const C_String = require('./C_String.function');
 
 
 module.exports = {
@@ -12,7 +11,7 @@ module.exports = {
     handleFaceBroadCast: async (blockId, botId) => {
 
         try {
-            let cus = await getUserOfChannel(face, botId);
+            let cus = await getUserOfChannel(C_String.face, botId);
             let conf = await Config.findOne({ botId: botId })
             let stp = await Step.find({ blockId: blockId }).sort({ position: 1 });
             if (cus && stp)
@@ -32,7 +31,7 @@ module.exports = {
     handleZaloBroadCast: async (blockId, botId) => {
 
         try {
-            let cus = await getUserOfPlatForm(zalo, botId);
+            let cus = await getUserOfChannel(C_String.zalo, botId);
             let conf = await Config.findOne({ botId: botId })
             let stp = await Step.find({ blockId: blockId }).sort({ position: 1 });
             if (cus && stp)
@@ -48,7 +47,7 @@ module.exports = {
             return;
         }
     }
-}
+};
 
 getUserOfChannel = async (channel, botId) => {
 

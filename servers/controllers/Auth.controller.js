@@ -3,7 +3,7 @@
 const Auth = require('../models/Auth.model');
 const sR = require('../functions/M_SendResponse.function');
 const message = require('../functions/C_String.function');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcrypt-nodejs');
 const salt = bcrypt.genSaltSync(10);
 
 module.exports = {

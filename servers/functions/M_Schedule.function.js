@@ -6,8 +6,7 @@ const M_BroadCast_handling = require('../functions/M_BroadCast_handling.function
 const Zalo = require('../functions/P_Zalo.function');
 const FaceBook = require('../functions/P_Facebook.function');
 const Customer = require('../models/Customer.model');
-const zalo = 'zalo';
-const face = 'facebook';
+const C_String = require('./C_String.function');
 
 var scheduler = {
     scheduleJob: function () {
@@ -24,13 +23,13 @@ var scheduler = {
                 ) {
 
                     switch (bro.channel) {
-                        case zalo:
+                        case C_String.zalo:
                             {
 
                                 await M_BroadCast_handling.handleZaloBroadCast(el.blockId, el.botId);
                             }
                             break;
-                        case face:
+                        case C_String.face:
                             {
 
                                 await M_BroadCast_handling.handleFaceBroadCast(el.blockId, el.botId);
@@ -73,10 +72,10 @@ reminder = async () => {
             obj_pro['button'] = [];
             obj_pro['template_type'] = 'text';
             obj_pro['type'] = 'text-card';
-            if (cus.channel == zalo)
-                await Zalo.sendMessage(el.senderId, obj_pro, conf.zalo_token);
-            else if (cus.channel == face)
-                await FaceBook.sendMessage(el.senderId, obj_pro, conf.fa_page_token);
+            if (cus.channel == C_String.zalo)
+                await Zalo.sendMessage(el.senderId, obj_pro, conf.zalo_token, el.botId);
+            else if (cus.channel == C_String.face)
+                await FaceBook.sendMessage(el.senderId, obj_pro, conf.fa_page_token, el.botId);
             await Reminder.deleteOne({ senderId: el.senderId, botId: el.botId })
         }
 

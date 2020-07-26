@@ -405,6 +405,12 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     var _user_survey_user_survey_component__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(
     /*! ./user-survey/user-survey.component */
     "./src/app/user-survey/user-survey.component.ts");
+    /* harmony import */
+
+
+    var _shared_services_survey_service__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(
+    /*! ./shared/services/survey.service */
+    "./src/app/shared/services/survey.service.ts");
 
     var AppModule = function AppModule() {
       _classCallCheck(this, AppModule);
@@ -418,7 +424,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
       factory: function AppModule_Factory(t) {
         return new (t || AppModule)();
       },
-      providers: [_shared_services_socketio_service__WEBPACK_IMPORTED_MODULE_14__["SocketioService"], _shared_services_user_service__WEBPACK_IMPORTED_MODULE_15__["UserService"], _shared_guards_auth_guard_service__WEBPACK_IMPORTED_MODULE_16__["AuthGuard"], _shared_services_authentication_service__WEBPACK_IMPORTED_MODULE_17__["AuthenticationService"]],
+      providers: [_shared_services_socketio_service__WEBPACK_IMPORTED_MODULE_14__["SocketioService"], _shared_services_user_service__WEBPACK_IMPORTED_MODULE_15__["UserService"], _shared_guards_auth_guard_service__WEBPACK_IMPORTED_MODULE_16__["AuthGuard"], _shared_services_authentication_service__WEBPACK_IMPORTED_MODULE_17__["AuthenticationService"], _shared_services_survey_service__WEBPACK_IMPORTED_MODULE_22__["SurveyService"]],
       imports: [[_angular_platform_browser__WEBPACK_IMPORTED_MODULE_0__["BrowserModule"], _angular_common_http__WEBPACK_IMPORTED_MODULE_4__["HttpClientModule"], _angular_forms__WEBPACK_IMPORTED_MODULE_2__["FormsModule"], _angular_forms__WEBPACK_IMPORTED_MODULE_2__["ReactiveFormsModule"], _app_routing_module__WEBPACK_IMPORTED_MODULE_3__["AppRoutingModule"], _angular_platform_browser_animations__WEBPACK_IMPORTED_MODULE_5__["BrowserAnimationsModule"], _angular_material_form_field__WEBPACK_IMPORTED_MODULE_7__["MatFormFieldModule"], _angular_material_icon__WEBPACK_IMPORTED_MODULE_8__["MatIconModule"], _angular_material_card__WEBPACK_IMPORTED_MODULE_9__["MatCardModule"], _angular_material_input__WEBPACK_IMPORTED_MODULE_10__["MatInputModule"], _angular_material_button__WEBPACK_IMPORTED_MODULE_11__["MatButtonModule"], _angular_material_checkbox__WEBPACK_IMPORTED_MODULE_12__["MatCheckboxModule"], _angular_material_snack_bar__WEBPACK_IMPORTED_MODULE_6__["MatSnackBarModule"], _angular_material_select__WEBPACK_IMPORTED_MODULE_13__["MatSelectModule"]]]
     });
 
@@ -437,7 +443,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         args: [{
           declarations: [_app_component__WEBPACK_IMPORTED_MODULE_18__["AppComponent"], _page_intro_page_intro_component__WEBPACK_IMPORTED_MODULE_20__["PageIntroComponent"], _login_login_component__WEBPACK_IMPORTED_MODULE_19__["LoginComponent"], _user_survey_user_survey_component__WEBPACK_IMPORTED_MODULE_21__["UserSurveyComponent"]],
           imports: [_angular_platform_browser__WEBPACK_IMPORTED_MODULE_0__["BrowserModule"], _angular_common_http__WEBPACK_IMPORTED_MODULE_4__["HttpClientModule"], _angular_forms__WEBPACK_IMPORTED_MODULE_2__["FormsModule"], _angular_forms__WEBPACK_IMPORTED_MODULE_2__["ReactiveFormsModule"], _app_routing_module__WEBPACK_IMPORTED_MODULE_3__["AppRoutingModule"], _angular_platform_browser_animations__WEBPACK_IMPORTED_MODULE_5__["BrowserAnimationsModule"], _angular_material_form_field__WEBPACK_IMPORTED_MODULE_7__["MatFormFieldModule"], _angular_material_icon__WEBPACK_IMPORTED_MODULE_8__["MatIconModule"], _angular_material_card__WEBPACK_IMPORTED_MODULE_9__["MatCardModule"], _angular_material_input__WEBPACK_IMPORTED_MODULE_10__["MatInputModule"], _angular_material_button__WEBPACK_IMPORTED_MODULE_11__["MatButtonModule"], _angular_material_checkbox__WEBPACK_IMPORTED_MODULE_12__["MatCheckboxModule"], _angular_material_snack_bar__WEBPACK_IMPORTED_MODULE_6__["MatSnackBarModule"], _angular_material_select__WEBPACK_IMPORTED_MODULE_13__["MatSelectModule"]],
-          providers: [_shared_services_socketio_service__WEBPACK_IMPORTED_MODULE_14__["SocketioService"], _shared_services_user_service__WEBPACK_IMPORTED_MODULE_15__["UserService"], _shared_guards_auth_guard_service__WEBPACK_IMPORTED_MODULE_16__["AuthGuard"], _shared_services_authentication_service__WEBPACK_IMPORTED_MODULE_17__["AuthenticationService"]],
+          providers: [_shared_services_socketio_service__WEBPACK_IMPORTED_MODULE_14__["SocketioService"], _shared_services_user_service__WEBPACK_IMPORTED_MODULE_15__["UserService"], _shared_guards_auth_guard_service__WEBPACK_IMPORTED_MODULE_16__["AuthGuard"], _shared_services_authentication_service__WEBPACK_IMPORTED_MODULE_17__["AuthenticationService"], _shared_services_survey_service__WEBPACK_IMPORTED_MODULE_22__["SurveyService"]],
           bootstrap: [_app_component__WEBPACK_IMPORTED_MODULE_18__["AppComponent"]]
         }]
       }], null, null);
@@ -2113,9 +2119,9 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵadvance"](1);
 
-        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵpropertyInterpolate"]("id", item_r2.variable);
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵpropertyInterpolate"]("id", item_r2._id);
 
-        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵpropertyInterpolate"]("name", item_r2.variable);
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵpropertyInterpolate"]("name", item_r2._id);
 
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵproperty"]("ngModel", item_r2.value);
       }

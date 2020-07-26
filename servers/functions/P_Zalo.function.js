@@ -6,7 +6,7 @@ const message = require('../functions/C_String.function');
 const fetch = require('node-fetch');
 const Config = require('../models/Config.model');
 const config = require('../../config');
-const zalo = 'zalo';
+const C_String = require('./C_String.function');
 
 
 
@@ -18,19 +18,19 @@ exports.webhook = async (req, res) => {
         let _token = con.zalo_token;
 
         if (zaloTemp.event_name == 'user_send_text') {
-            await M_Message_handling.handleCustomer(zaloTemp.sender.id, zalo, _token, req.params.botId);
+            await M_Message_handling.handleCustomer(zaloTemp.sender.id, C_String.zalo, _token, req.params.botId);
             let isActive = await M_Message_handling.handleSupport(zaloTemp.sender.id, req.params.botId)
             let chechText = zaloTemp.message.text.search('{');
 
             if (chechText != -1) {
                 await M_Message_handling.handleLiveChat(zaloTemp.message.text, zaloTemp.sender.id, true, 'btn', req.params.botId);
                 if (isActive)
-                    await Core.handlePostback(zaloTemp.sender.id, zaloTemp.message.text, zalo, _token, req.params.botId);
+                    await Core.handlePostback(zaloTemp.sender.id, zaloTemp.message.text, C_String.zalo, _token, req.params.botId);
             }
             else {
                 await M_Message_handling.handleLiveChat(zaloTemp.message.text, zaloTemp.sender.id, true, 'text', req.params.botId);
                 if (isActive)
-                    await Core.handleText(zaloTemp.sender.id, zaloTemp.message.text, zalo, _token, req.params.botId);
+                    await Core.handleText(zaloTemp.sender.id, zaloTemp.message.text, C_String.zalo, _token, req.params.botId);
             }
             return sR.sendResponse(res, 200, null, message.getSuccess);
         }
