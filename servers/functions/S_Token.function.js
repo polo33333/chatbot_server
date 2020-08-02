@@ -1,6 +1,5 @@
 var jwt = require('jsonwebtoken');
-// var config = require('../../config');
-// var cookieParser = require('cookie-parser');
+var config = require('../../config');
 var sR = require('./M_SendResponse.function');
 var message = require('./C_String.function');
 
@@ -16,30 +15,16 @@ var get_cookies = (request) => {
 
 
 // protect router if you want
-exports.verifyToken = (req, res, next) => {
-    // check avablie in db
-    // rule check _id in token with _id user in db and lastModifited in token with db to verity token
-
-    var token = req.body.token || req.query.token || get_cookies(req)['auth'] || req.headers['x-access-token'];
-    console.log(token);
-    if (!token || token == undefined) sR.sendResponse(res, 403, null, message.noToken);
-    else {
-        jwt.verify(token, 'superSecret', function (err, decoded) {
-            // console.log(decoded);
-            if (err) sR.sendResponse(res, 401, null, message.authenticateFail);
-            else {
-                //console.log(decoded);
-                req.decoded = decoded;
-                next();
+exports.verifyToken = (token, secretKey) => {
+    return new Promise((resolve, reject) => {
+        jwt.verify(token, secretKey, (err, decoded) => {
+            if (err) {
+                return reject(err);
             }
-
-        })
-    }
+            resolve(decoded);
+        });
+    });
 }
 
-// protect router if has role="admin"
-exports.verifyTokenAdmin = () => {
-    // comming soon
-}
 
 // module.exports = verifyToken;

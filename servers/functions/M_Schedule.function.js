@@ -10,9 +10,10 @@ const C_String = require('./C_String.function');
 
 var scheduler = {
     scheduleJob: function () {
-        var job = schedule.scheduleJob('* * * * *', async function () {
+        var job = schedule.scheduleJob('/1 * * * *', async function () {
             var bro = await BroadCast.find({ 'isSchedule': true });
             let currDate = new Date();
+            await reminder_user();
             bro.forEach(async el => {
                 if (
                     el.sendingTime.day == currDate.getDate()
@@ -48,42 +49,43 @@ var scheduler = {
                 }
             });
 
-            await reminder();
+
 
         });
         return job;
     }
 }
 
-reminder = async () => {
+reminder_user = async () => {
 
-    let arrReminder = await Reminder.find();
-    for (let i = 0; i < arrReminder.length; i++) {
-        let el = arrReminder[i];
-        if (el.timeOut != 0) {
-            el.timeOut--;
-            await el.save();
+    let arrReminder = await Reminder.updateMany(
+        { timeOut: { $gt: 0 }, },
+        { $inc: { "timeOut": -1 } },
+    );
 
-        } else {
-            let conf = await Config.findOne({ botId: el.botId });
-            let cus = await Customer.findOne({ senderId: el.senderId, botId: el.botId });
-            let obj_pro = {};
-            obj_pro['content'] = (conf.reminder_content).replace("{{reminder_timeout}}", conf.reminder_timeout);
-            obj_pro['button'] = [];
-            obj_pro['template_type'] = 'text';
-            obj_pro['type'] = 'text-card';
-            if (cus.channel == C_String.zalo)
-                await Zalo.sendMessage(el.senderId, obj_pro, conf.zalo_token, el.botId);
-            else if (cus.channel == C_String.face)
-                await FaceBook.sendMessage(el.senderId, obj_pro, conf.fa_page_token, el.botId);
-            await Reminder.deleteOne({ senderId: el.senderId, botId: el.botId })
+    if (arrReminder.length > 0)
+        for (let i = 0; i < arrReminder.length; i++) {
+            let el = arrReminder[i];
+            if (el.timeOut == 0) {
+                let conf = await Config.findOne({ botId: el.botId });
+                let cus = await Customer.findOne({ senderId: el.senderId, botId: el.botId });
+                let obj_pro = {};
+                obj_pro['content'] = (conf.reminder_content).replace("{{reminder_timeout}}", conf.reminder_timeout);
+                obj_pro['button'] = [];
+                obj_pro['template_type'] = 'text';
+                obj_pro['type'] = 'text-card';
+                if (cus.channel == C_String.zalo)
+                    await Zalo.sendMessage(el.senderId, obj_pro, conf.zalo_token, el.botId);
+                else if (cus.channel == C_String.face)
+                    await FaceBook.sendMessage(el.senderId, obj_pro, conf.fa_page_token, el.botId);
+
+                //await Reminder.deleteOne({ senderId: el.senderId, botId: el.botId })
+            }
+
+
         }
-
-
-    }
 
     return;
 }
-
 
 module.exports = scheduler;

@@ -5,6 +5,10 @@ const sR = require('../functions/M_SendResponse.function');
 const message = require('../functions/C_String.function');
 const bcrypt = require('bcrypt-nodejs');
 const salt = bcrypt.genSaltSync(10);
+const jwt = require('jsonwebtoken');
+const config = require('../../config');
+const S_Token = require('../functions/S_Token.function');
+const tokenList = {};
 
 module.exports = {
 
@@ -92,10 +96,31 @@ module.exports = {
         try {
             let obj = req.body;
             let user = await Auth.findOne({ userName: obj.userName });
-            if (user)
-                if ( await pass_encrypt(user.pass, obj.pass))
-                    return sR.sendResponse(res, 200, true, message.accessSuccess);
-            return sR.sendResponse(res, 200, false, message.accessFail);
+            if (user) {
+                let payload = {
+                    "role": 0,
+                    "user": user.userName
+                }
+
+                if (await pass_encrypt(user.pass, obj.pass)) {
+                    let token = jwt.sign(payload, config.secret, {
+                        expiresIn: config.tokenLife,
+                    });
+                    let refreshToken = jwt.sign(payload, config.refreshTokenSecret, {
+                        expiresIn: config.refreshTokenLife
+                    });
+                    tokenList[refreshToken] = payload;
+
+                    return sR.sendResponse(res, 200, {
+                        access_token: token,
+                        refresh_token: refreshToken,
+                    }, message.accessSuccess);
+                } else {
+                    return sR.sendResponse(res, 200, null, message.noMatch);
+                }
+            } else
+
+                return sR.sendResponse(res, 404, null, message.notFound);
 
         } catch (error) {
 
@@ -103,10 +128,68 @@ module.exports = {
             return sR.sendResponse(res, 400, null, error);
         }
 
+    },
+    // refreshToken method
+    refreshToken: async (req, res) => {
+        // Lấy thông tin mã token được đính kèm trong request
+        let { refreshToken } = req.body;
+        console.log(refreshToken)
+        if (refreshToken) {
+            try {
+                // Kiểm tra mã Refresh token
+                await S_Token.verifyToken(refreshToken, config.refreshTokenSecret);
+                // Lấy lại thông tin user
+
+                // Tạo mới mã token và trả lại cho user
+                let token = jwt.sign({"role": 0}, config.secret, {
+                    expiresIn: config.tokenLife,
+                });
+
+                let refreshToken1 = jwt.sign({"role": 0}, config.refreshTokenSecret, {
+                    expiresIn: config.refreshTokenLife
+                });
+
+                return sR.sendResponse(res, 200, {
+                    access_token: token,
+                    refresh_token: refreshToken1,
+                }, message.accessSuccess);
+            } catch (err) {
+                console.error(err);
+                return sR.sendResponse(res, 403, null, 'Invalid refresh token');
+            }
+        } else {
+            return sR.sendResponse(res, 400, null, 'Invalid request');
+        }
+    },
+    // check token middleware method
+    TokenCheck: async (req, res, next) => {
+        // Lấy thông tin mã token được đính kèm trong request
+        let token = req.body.token || req.query.token || req.headers['x-access-token'] || req.header('Authorization');
+        // decode token
+        if (token) {
+            // Xác thực mã token và kiểm tra thời gian hết hạn của mã
+            try {
+                let decoded = await S_Token.verifyToken(token, config.secret);
+                // Lưu thông tin giã mã được vào đối tượng req, dùng cho các xử lý ở sau
+                req.decoded = decoded;
+                next();
+            } catch (err) {
+                // Giải mã gặp lỗi: Không đúng, hết hạn...
+                console.log('Error[Auth:TokenCheck]: ' + err);
+                return sR.sendResponse(res, 401, null, 'Unauthorized access.');
+
+            }
+        } else {
+            // Không tìm thấy token trong request
+            return sR.sendResponse(res, 403, null, 'No token provided.');
+        }
     }
 
 
 };
+
+
+
 
 pass_decrypt = async (pass) => {
     try {

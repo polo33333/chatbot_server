@@ -9,6 +9,7 @@ exports.updateFail = 'Update not success!';
 exports.deleteSuccess = 'Delete success!';
 exports.deleteFail = 'Delete not success!';
 exports.noToken = 'No token provided!';
+exports.noMatch = 'Not Match userName and pass';
 exports.authenticateFail = 'Failed to authenticate token!';
 exports.accessFail = 'Failed to authenticate!';
 exports.accessSuccess = 'Success to authenticate!';
