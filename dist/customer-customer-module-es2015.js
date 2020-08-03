@@ -8096,7 +8096,7 @@ const routes = [
             },
         ]
     },
-    { path: 'bots', loadChildren: () => __webpack_require__.e(/*! import() | bot-bot-module */ "bot-bot-module").then(__webpack_require__.bind(null, /*! ../bot/bot.module */ "./src/app/bot/bot.module.ts")).then(m => m.BotModule), canActivate: [_shared_guards_auth_guard_service__WEBPACK_IMPORTED_MODULE_4__["AuthGuard"]] },
+    { path: 'bots', loadChildren: () => __webpack_require__.e(/*! import() | bot-bot-module */ "bot-bot-module").then(__webpack_require__.bind(null, /*! ../bot/bot.module */ "./src/app/bot/bot.module.ts")).then(m => m.BotModule), canActivate: [_shared_guards_auth_guard_service__WEBPACK_IMPORTED_MODULE_4__["AuthGuardService"]] },
     { path: '**', redirectTo: '' }
 ];
 class CustomerRoutingModule {
@@ -8128,7 +8128,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CustomerComponent", function() { return CustomerComponent; });
 /* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/__ivy_ngcc__/fesm2015/core.js");
 /* harmony import */ var _angular_router__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @angular/router */ "./node_modules/@angular/router/__ivy_ngcc__/fesm2015/router.js");
-/* harmony import */ var _shared_services_authentication_service__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../shared/services/authentication.service */ "./src/app/shared/services/authentication.service.ts");
+/* harmony import */ var _shared_guards_auth_service__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../shared/guards/auth.service */ "./src/app/shared/guards/auth.service.ts");
 /* harmony import */ var _angular_material_toolbar__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @angular/material/toolbar */ "./node_modules/@angular/material/__ivy_ngcc__/fesm2015/toolbar.js");
 /* harmony import */ var _angular_material_button__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @angular/material/button */ "./node_modules/@angular/material/__ivy_ngcc__/fesm2015/button.js");
 /* harmony import */ var _angular_material_icon__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @angular/material/icon */ "./node_modules/@angular/material/__ivy_ngcc__/fesm2015/icon.js");
@@ -8171,8 +8171,7 @@ class CustomerComponent {
     ngOnInit() {
     }
     logout() {
-        this.authService.logout();
-        this.router.navigate(['login']);
+        this.authService.logOut();
     }
     // Shows and hides the loading spinner during RouterEvent changes
     navigationInterceptor(event) {
@@ -8192,7 +8191,7 @@ class CustomerComponent {
         }
     }
 }
-CustomerComponent.ɵfac = function CustomerComponent_Factory(t) { return new (t || CustomerComponent)(_angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdirectiveInject"](_angular_router__WEBPACK_IMPORTED_MODULE_1__["Router"]), _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdirectiveInject"](_shared_services_authentication_service__WEBPACK_IMPORTED_MODULE_2__["AuthenticationService"])); };
+CustomerComponent.ɵfac = function CustomerComponent_Factory(t) { return new (t || CustomerComponent)(_angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdirectiveInject"](_angular_router__WEBPACK_IMPORTED_MODULE_1__["Router"]), _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdirectiveInject"](_shared_guards_auth_service__WEBPACK_IMPORTED_MODULE_2__["AuthService"])); };
 CustomerComponent.ɵcmp = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineComponent"]({ type: CustomerComponent, selectors: [["app-customer"]], decls: 38, vars: 2, consts: [["color", "primary"], ["mat-icon-button", "", "aria-label", "menu"], [1, "lb-logo"], [1, "bar-right"], ["mat-icon-button", "", 4, "ngIf"], ["mat-icon-button", ""], ["mat-icon-button", "", 3, "matMenuTriggerFor"], ["notification", "matMenu"], ["mat-menu-item", "", "disabled", ""], ["mat-menu-item", "", 3, "click"], [1, "customers-page"], [1, "loading"], [1, "sysnc"]], template: function CustomerComponent_Template(rf, ctx) { if (rf & 1) {
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](0, "mat-toolbar", 0);
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](1, "button", 1);
@@ -8269,7 +8268,7 @@ CustomerComponent.ɵcmp = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefine
                 templateUrl: './customer.component.html',
                 styleUrls: ['./customer.component.css']
             }]
-    }], function () { return [{ type: _angular_router__WEBPACK_IMPORTED_MODULE_1__["Router"] }, { type: _shared_services_authentication_service__WEBPACK_IMPORTED_MODULE_2__["AuthenticationService"] }]; }, null); })();
+    }], function () { return [{ type: _angular_router__WEBPACK_IMPORTED_MODULE_1__["Router"] }, { type: _shared_guards_auth_service__WEBPACK_IMPORTED_MODULE_2__["AuthService"] }]; }, null); })();
 
 
 /***/ }),
@@ -8310,6 +8309,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _dialog_bot_remove_bot_remove_component__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! ./dialog/bot-remove/bot-remove.component */ "./src/app/customer/dialog/bot-remove/bot-remove.component.ts");
 /* harmony import */ var _shared_services_bots_service__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ../shared/services/bots.service */ "./src/app/shared/services/bots.service.ts");
 /* harmony import */ var _angular_material_select__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! @angular/material/select */ "./node_modules/@angular/material/__ivy_ngcc__/fesm2015/select.js");
+/* harmony import */ var _shared_guards_auth_interceptor__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! ../shared/guards/auth.interceptor */ "./src/app/shared/guards/auth.interceptor.ts");
+
 
 
 
@@ -8342,6 +8343,7 @@ class CustomerModule {
 CustomerModule.ɵmod = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineNgModule"]({ type: CustomerModule });
 CustomerModule.ɵinj = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineInjector"]({ factory: function CustomerModule_Factory(t) { return new (t || CustomerModule)(); }, providers: [
         _shared_services_bots_service__WEBPACK_IMPORTED_MODULE_24__["BotService"],
+        { provide: _angular_common_http__WEBPACK_IMPORTED_MODULE_3__["HTTP_INTERCEPTORS"], useClass: _shared_guards_auth_interceptor__WEBPACK_IMPORTED_MODULE_26__["AuthInterceptor"], multi: true },
     ], imports: [[
             _angular_common__WEBPACK_IMPORTED_MODULE_1__["CommonModule"],
             _customer_routing_module__WEBPACK_IMPORTED_MODULE_4__["CustomerRoutingModule"],
@@ -8419,6 +8421,7 @@ CustomerModule.ɵinj = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineInj
                 ],
                 providers: [
                     _shared_services_bots_service__WEBPACK_IMPORTED_MODULE_24__["BotService"],
+                    { provide: _angular_common_http__WEBPACK_IMPORTED_MODULE_3__["HTTP_INTERCEPTORS"], useClass: _shared_guards_auth_interceptor__WEBPACK_IMPORTED_MODULE_26__["AuthInterceptor"], multi: true },
                 ],
                 entryComponents: [
                     _dialog_bot_create_bot_create_component__WEBPACK_IMPORTED_MODULE_22__["BotCreateComponent"],

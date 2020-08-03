@@ -13474,7 +13474,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
           return m.BotModule;
         });
       },
-      canActivate: [_shared_guards_auth_guard_service__WEBPACK_IMPORTED_MODULE_4__["AuthGuard"]]
+      canActivate: [_shared_guards_auth_guard_service__WEBPACK_IMPORTED_MODULE_4__["AuthGuardService"]]
     }, {
       path: '**',
       redirectTo: ''
@@ -13550,9 +13550,9 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     /* harmony import */
 
 
-    var _shared_services_authentication_service__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(
-    /*! ../shared/services/authentication.service */
-    "./src/app/shared/services/authentication.service.ts");
+    var _shared_guards_auth_service__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(
+    /*! ../shared/guards/auth.service */
+    "./src/app/shared/guards/auth.service.ts");
     /* harmony import */
 
 
@@ -13632,8 +13632,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
       }, {
         key: "logout",
         value: function logout() {
-          this.authService.logout();
-          this.router.navigate(['login']);
+          this.authService.logOut();
         } // Shows and hides the loading spinner during RouterEvent changes
 
       }, {
@@ -13665,7 +13664,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     }();
 
     CustomerComponent.ɵfac = function CustomerComponent_Factory(t) {
-      return new (t || CustomerComponent)(_angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdirectiveInject"](_angular_router__WEBPACK_IMPORTED_MODULE_1__["Router"]), _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdirectiveInject"](_shared_services_authentication_service__WEBPACK_IMPORTED_MODULE_2__["AuthenticationService"]));
+      return new (t || CustomerComponent)(_angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdirectiveInject"](_angular_router__WEBPACK_IMPORTED_MODULE_1__["Router"]), _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdirectiveInject"](_shared_guards_auth_service__WEBPACK_IMPORTED_MODULE_2__["AuthService"]));
     };
 
     CustomerComponent.ɵcmp = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineComponent"]({
@@ -13830,7 +13829,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         return [{
           type: _angular_router__WEBPACK_IMPORTED_MODULE_1__["Router"]
         }, {
-          type: _shared_services_authentication_service__WEBPACK_IMPORTED_MODULE_2__["AuthenticationService"]
+          type: _shared_guards_auth_service__WEBPACK_IMPORTED_MODULE_2__["AuthService"]
         }];
       }, null);
     })();
@@ -14013,6 +14012,12 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     var _angular_material_select__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(
     /*! @angular/material/select */
     "./node_modules/@angular/material/__ivy_ngcc__/fesm2015/select.js");
+    /* harmony import */
+
+
+    var _shared_guards_auth_interceptor__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(
+    /*! ../shared/guards/auth.interceptor */
+    "./src/app/shared/guards/auth.interceptor.ts");
 
     var CustomerModule = function CustomerModule() {
       _classCallCheck(this, CustomerModule);
@@ -14025,7 +14030,11 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
       factory: function CustomerModule_Factory(t) {
         return new (t || CustomerModule)();
       },
-      providers: [_shared_services_bots_service__WEBPACK_IMPORTED_MODULE_24__["BotService"]],
+      providers: [_shared_services_bots_service__WEBPACK_IMPORTED_MODULE_24__["BotService"], {
+        provide: _angular_common_http__WEBPACK_IMPORTED_MODULE_3__["HTTP_INTERCEPTORS"],
+        useClass: _shared_guards_auth_interceptor__WEBPACK_IMPORTED_MODULE_26__["AuthInterceptor"],
+        multi: true
+      }],
       imports: [[_angular_common__WEBPACK_IMPORTED_MODULE_1__["CommonModule"], _customer_routing_module__WEBPACK_IMPORTED_MODULE_4__["CustomerRoutingModule"], _angular_forms__WEBPACK_IMPORTED_MODULE_2__["FormsModule"], _angular_common_http__WEBPACK_IMPORTED_MODULE_3__["HttpClientModule"], _angular_material_toolbar__WEBPACK_IMPORTED_MODULE_8__["MatToolbarModule"], _angular_material_button__WEBPACK_IMPORTED_MODULE_7__["MatButtonModule"], _angular_material_sidenav__WEBPACK_IMPORTED_MODULE_9__["MatSidenavModule"], _angular_material_icon__WEBPACK_IMPORTED_MODULE_10__["MatIconModule"], _angular_material_list__WEBPACK_IMPORTED_MODULE_11__["MatListModule"], _angular_material_menu__WEBPACK_IMPORTED_MODULE_12__["MatMenuModule"], _angular_material_dialog__WEBPACK_IMPORTED_MODULE_13__["MatDialogModule"], _angular_material_progress_bar__WEBPACK_IMPORTED_MODULE_14__["MatProgressBarModule"], _angular_material_progress_spinner__WEBPACK_IMPORTED_MODULE_15__["MatProgressSpinnerModule"], _angular_material_card__WEBPACK_IMPORTED_MODULE_16__["MatCardModule"], _angular_material_menu__WEBPACK_IMPORTED_MODULE_12__["MatMenuModule"], _angular_material_snack_bar__WEBPACK_IMPORTED_MODULE_17__["MatSnackBarModule"], _angular_material_select__WEBPACK_IMPORTED_MODULE_25__["MatSelectModule"]]]
     });
 
@@ -14044,7 +14053,11 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         args: [{
           declarations: [_customer_component__WEBPACK_IMPORTED_MODULE_5__["CustomerComponent"], _bots_bots_component__WEBPACK_IMPORTED_MODULE_6__["BotsComponent"], _overview_overview_component__WEBPACK_IMPORTED_MODULE_18__["OverviewComponent"], _supports_supports_component__WEBPACK_IMPORTED_MODULE_19__["SupportsComponent"], _profiles_profiles_component__WEBPACK_IMPORTED_MODULE_20__["ProfilesComponent"], _guides_guides_component__WEBPACK_IMPORTED_MODULE_21__["GuidesComponent"], _dialog_bot_create_bot_create_component__WEBPACK_IMPORTED_MODULE_22__["BotCreateComponent"], _dialog_bot_remove_bot_remove_component__WEBPACK_IMPORTED_MODULE_23__["BotRemoveComponent"]],
           imports: [_angular_common__WEBPACK_IMPORTED_MODULE_1__["CommonModule"], _customer_routing_module__WEBPACK_IMPORTED_MODULE_4__["CustomerRoutingModule"], _angular_forms__WEBPACK_IMPORTED_MODULE_2__["FormsModule"], _angular_common_http__WEBPACK_IMPORTED_MODULE_3__["HttpClientModule"], _angular_material_toolbar__WEBPACK_IMPORTED_MODULE_8__["MatToolbarModule"], _angular_material_button__WEBPACK_IMPORTED_MODULE_7__["MatButtonModule"], _angular_material_sidenav__WEBPACK_IMPORTED_MODULE_9__["MatSidenavModule"], _angular_material_icon__WEBPACK_IMPORTED_MODULE_10__["MatIconModule"], _angular_material_list__WEBPACK_IMPORTED_MODULE_11__["MatListModule"], _angular_material_menu__WEBPACK_IMPORTED_MODULE_12__["MatMenuModule"], _angular_material_dialog__WEBPACK_IMPORTED_MODULE_13__["MatDialogModule"], _angular_material_progress_bar__WEBPACK_IMPORTED_MODULE_14__["MatProgressBarModule"], _angular_material_progress_spinner__WEBPACK_IMPORTED_MODULE_15__["MatProgressSpinnerModule"], _angular_material_card__WEBPACK_IMPORTED_MODULE_16__["MatCardModule"], _angular_material_menu__WEBPACK_IMPORTED_MODULE_12__["MatMenuModule"], _angular_material_snack_bar__WEBPACK_IMPORTED_MODULE_17__["MatSnackBarModule"], _angular_material_select__WEBPACK_IMPORTED_MODULE_25__["MatSelectModule"]],
-          providers: [_shared_services_bots_service__WEBPACK_IMPORTED_MODULE_24__["BotService"]],
+          providers: [_shared_services_bots_service__WEBPACK_IMPORTED_MODULE_24__["BotService"], {
+            provide: _angular_common_http__WEBPACK_IMPORTED_MODULE_3__["HTTP_INTERCEPTORS"],
+            useClass: _shared_guards_auth_interceptor__WEBPACK_IMPORTED_MODULE_26__["AuthInterceptor"],
+            multi: true
+          }],
           entryComponents: [_dialog_bot_create_bot_create_component__WEBPACK_IMPORTED_MODULE_22__["BotCreateComponent"], _dialog_bot_remove_bot_remove_component__WEBPACK_IMPORTED_MODULE_23__["BotRemoveComponent"]]
         }]
       }], null, null);

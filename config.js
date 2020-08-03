@@ -1,8 +1,10 @@
 module.exports = {
   secret: 'jsonwebtoken',
   refreshTokenSecret: "some-s3cret-refre2h-token",
-  tokenLife: 60, // 15 phút
-  refreshTokenLife: 900,// một ngày
+  tokenLife: 900, // 15 phút
+  refreshTokenLife: 86400,// một ngày
+  // tokenLife: 60, // 15 phút
+  // refreshTokenLife: 120,// một ngày
   url: 'mongodb://localhost:27017/chatbot',
   access_token: 'A3UUASVNN7RW762U5MEYATEZ7YP5OYB3',
   auth: 'Bearer ',

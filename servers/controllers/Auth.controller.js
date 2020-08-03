@@ -49,9 +49,12 @@ module.exports = {
         try {
             let obj = req.body;
             obj.pass = await pass_decrypt(obj.pass);
-            let auth = await Auth.create(obj);
-            if (auth)
-                return sR.sendResponse(res, 200, auth, message.createSuccess);
+            let current = await Auth.findOne({userName : obj.userName});
+            if(current == null){
+                let auth = await Auth.create(obj);
+                if (auth)
+                    return sR.sendResponse(res, 200, auth, message.createSuccess);
+            }
             return sR.sendResponse(res, 400, null, message.createFail);
 
 
@@ -133,7 +136,7 @@ module.exports = {
     refreshToken: async (req, res) => {
         // Lấy thông tin mã token được đính kèm trong request
         let { refreshToken } = req.body;
-        console.log(refreshToken)
+        //console.log(refreshToken)
         if (refreshToken) {
             try {
                 // Kiểm tra mã Refresh token
@@ -141,11 +144,11 @@ module.exports = {
                 // Lấy lại thông tin user
 
                 // Tạo mới mã token và trả lại cho user
-                let token = jwt.sign({"role": 0}, config.secret, {
+                let token = jwt.sign({ "role": 0 }, config.secret, {
                     expiresIn: config.tokenLife,
                 });
 
-                let refreshToken1 = jwt.sign({"role": 0}, config.refreshTokenSecret, {
+                let refreshToken1 = jwt.sign({ "role": 0 }, config.refreshTokenSecret, {
                     expiresIn: config.refreshTokenLife
                 });
 
@@ -153,8 +156,8 @@ module.exports = {
                     access_token: token,
                     refresh_token: refreshToken1,
                 }, message.accessSuccess);
-            } catch (err) {
-                console.error(err);
+            } catch (error) {
+                console.log('Error[Auth:refreshToken]: ' + error);
                 return sR.sendResponse(res, 403, null, 'Invalid refresh token');
             }
         } else {
@@ -173,9 +176,9 @@ module.exports = {
                 // Lưu thông tin giã mã được vào đối tượng req, dùng cho các xử lý ở sau
                 req.decoded = decoded;
                 next();
-            } catch (err) {
+            } catch (error) {
                 // Giải mã gặp lỗi: Không đúng, hết hạn...
-                console.log('Error[Auth:TokenCheck]: ' + err);
+                console.log('Error[Auth:TokenCheck]: ' + error);
                 return sR.sendResponse(res, 401, null, 'Unauthorized access.');
 
             }
